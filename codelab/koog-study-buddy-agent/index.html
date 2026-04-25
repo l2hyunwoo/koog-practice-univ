@@ -1,0 +1,810 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>과제 끝내기 에이전트 — Kotlin &#43; Koog로 나만의 학습 도우미 만들기</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14" ga4id=""></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  codelab-ga4id=""
+                  id="koog-study-buddy-agent"
+                  title="과제 끝내기 에이전트 — Kotlin &#43; Koog로 나만의 학습 도우미 만들기"
+                  environment="web"
+                  feedback-link="https://github.com/bw-ai/2026-bwai-campus-korea-ai-agent-with-kotlin/issues">
+    
+      <google-codelab-step label="소개" duration="2">
+        <p>&#34;매주 5분 투자한 게 시험 전날 치트시트가 되어 돌아온다&#34;</p>
+<p>이 코드랩에서는 JetBrains의 <strong>Koog</strong> 프레임워크를 사용해 실제로 동작하는 AI 학습 도우미 에이전트를 단계적으로 만들어봅니다.</p>
+<p>강의자료를 던져놓으면 복습 노트가 자동으로 만들어지고, 과제 때는 축적된 노트를 참고해서 풀이 가이드를 생성하고, 시험 때는 한 학기 노트를 종합해서 치트시트와 예상문제를 자동으로 만들어주는 에이전트입니다.</p>
+<pre><code>매주: 강의자료 → 에이전트가 복습 노트 생성 → notes/에 축적
+        ↓
+과제 때: notes/ 참고해서 C++ 과제 풀이 가이드 생성
+        ↓
+시험 때: notes/ 전체를 종합 → 치트시트 + 예상문제 + 개념맵 자동 생성
+</code></pre>
+<h2 is-upgraded>무엇을 배우나요?</h2>
+<ul>
+<li><strong>Koog AIAgent</strong>: <code>AIAgent</code>, <code>simpleGoogleAIExecutor</code>, <code>systemPrompt</code>의 구성 방법</li>
+<li><strong>Custom Tool 개발</strong>: <code>@Tool</code>, <code>@LLMDescription</code> 어노테이션으로 에이전트가 사용할 함수 만들기</li>
+<li><strong>ToolRegistry</strong>: 여러 Tool을 에이전트에 연결하는 방법</li>
+<li><strong>ChatMemory Feature</strong>: 대화 맥락을 유지하는 메모리 시스템 구현</li>
+<li><strong>Multi-Agent Orchestration</strong>: 여러 전문 에이전트를 조합해서 복잡한 작업 분업</li>
+</ul>
+<h2 is-upgraded>사전 준비</h2>
+<p>시작 전에 다음 항목을 준비하세요.</p>
+<ul>
+<li><strong>IntelliJ IDEA</strong> Community Edition(무료) 또는 Ultimate, 또는 Android Studio</li>
+<li><strong>JDK 21 이상</strong></li>
+<li><strong>Google AI Studio API 키</strong> (<a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> 에서 무료 발급)</li>
+<li><strong>Kotlin 기초 문법</strong> 이해 (기본 문법을 알고 있으면 충분)</li>
+</ul>
+<h2 is-upgraded>기술 스택</h2>
+<ul>
+<li>Kotlin 2.3.21</li>
+<li>Koog 0.8.0</li>
+<li>Google Gemini API</li>
+<li>Gradle</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="환경 설정" duration="7">
+        <h2 is-upgraded>1. JDK 21 설치 확인</h2>
+<p>터미널에서 확인합니다.</p>
+<pre><code language="language-bash" class="language-bash">java -version
+# openjdk version &#34;21.x.x&#34; 이상이면 OK
+</code></pre>
+<h2 is-upgraded>2. Google Gemini API Key 발급</h2>
+<ol type="1">
+<li><a href="https://aistudio.google.com" target="_blank">Google AI Studio</a>에 접속</li>
+<li>&#34;Get API Key&#34; 클릭 → &#34;Create API key&#34; 클릭</li>
+<li>발급된 키를 복사해두기</li>
+</ol>
+<h2 is-upgraded>3. 환경변수 설정</h2>
+<p>Mac/Linux:</p>
+<pre><code language="language-bash" class="language-bash">export GOOGLE_API_KEY=여기에_발급받은_키_붙여넣기
+</code></pre>
+<p>Windows (PowerShell):</p>
+<pre><code language="language-powershell" class="language-powershell">$env:GOOGLE_API_KEY=&#34;여기에_발급받은_키_붙여넣기&#34;
+</code></pre>
+<p>Positive : IntelliJ에서 실행할 때는 Run &gt; Edit Configurations &gt; Environment variables에서 설정해도 됩니다.</p>
+<h2 is-upgraded>4. 프로젝트 열기</h2>
+<p>프로젝트 폴더를 IntelliJ로 열고 Gradle sync가 완료될 때까지 기다립니다. 처음에는 라이브러리 다운로드로 시간이 걸릴 수 있습니다.</p>
+<h2 is-upgraded>5. 프로젝트 구조</h2>
+<pre><code>2026-bwai-campus-korea-ai-agent-with-kotlin/
+├── build.gradle.kts                    # Gradle 빌드 설정
+├── src/main/kotlin/com/example/studybuddy/
+│   ├── Main.kt                         # 진입점
+│   └── tools/
+│       ├── ReadFileTool.kt             # 파일 읽기 도구
+│       ├── SaveNoteTool.kt             # 노트 저장 도구
+│       ├── ListFilesTool.kt            # 파일 목록 도구
+│       └── GenerateExamPrepTool.kt     # 시험 대비 자료 생성 도구
+├── lecture-notes/                      # 강의 자료 (예제 데이터)
+│   ├── week07-bst-basics.md
+│   └── week08-avl-tree.md
+├── assignments/                        # 과제 요구사항
+│   └── hw-avl-tree.md
+├── student-code/                       # 학생 코드 (버그 포함)
+│   └── avl_tree.cpp
+├── notes/                              # 에이전트가 자동 생성하는 복습 노트
+└── exam-prep/                          # 에이전트가 생성하는 시험 대비 자료
+</code></pre>
+<h2 is-upgraded>트러블슈팅</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>오류</p>
+</td><td colspan="1" rowspan="1"><p>해결법</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Gradle sync 실패</p>
+</td><td colspan="1" rowspan="1"><p>JDK 21 설치 확인, File &gt; Project Structure &gt; SDK</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>GOOGLE_API_KEY</code> 미인식</p>
+</td><td colspan="1" rowspan="1"><p>IntelliJ 재시작, 또는 Run Configuration에서 직접 설정</p>
+</td></tr>
+</table>
+<p><code>./gradlew build</code> 명령이 성공하면 이 단계 완료입니다.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="첫 에이전트 &#43; 역할 부여" duration="7">
+        <h2 is-upgraded>Koog 핵심 컴포넌트</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>클래스/함수</p>
+</td><td colspan="1" rowspan="1"><p>역할</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>AIAgent</code></p>
+</td><td colspan="1" rowspan="1"><p>Koog의 핵심 클래스. LLM 모델과 System Prompt, Tool을 묶어서 하나의 에이전트를 만든다</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>simpleGoogleAIExecutor</code></p>
+</td><td colspan="1" rowspan="1"><p>Google Gemini API와 연결하는 실행기</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>systemPrompt</code></p>
+</td><td colspan="1" rowspan="1"><p>에이전트의 역할과 행동 규칙을 정의하는 텍스트. 이게 바뀌면 에이전트의 성격이 완전히 달라진다</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>GoogleModels</code></p>
+</td><td colspan="1" rowspan="1"><p>사용할 Gemini 모델을 지정한다</p>
+</td></tr>
+</table>
+<h2 is-upgraded>예제 시나리오</h2>
+<p>에이전트에게 &#34;AVL Tree가 뭐야?&#34; 라고 질문하면 과제 도우미 스타일로 답해줍니다.</p>
+<h2 is-upgraded>Main.kt 구현</h2>
+<p><code>Main.kt</code> 상단의 임포트와 <code>studyBuddyPrompt</code>를 확인한 뒤, 아래 코드로 간단한 에이전트를 먼저 실행해봅니다.</p>
+<pre><code language="language-kotlin" class="language-kotlin">import ai.koog.agents.core.agent.AIAgent
+import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
+import ai.koog.prompt.executor.clients.google.GoogleModels
+import kotlinx.coroutines.runBlocking
+
+fun main() = runBlocking {
+    val apiKey = System.getenv(&#34;GOOGLE_API_KEY&#34;)
+        ?: error(&#34;GOOGLE_API_KEY 환경변수를 설정해주세요!&#34;)
+
+    val agent = AIAgent(
+        promptExecutor = simpleGoogleAIExecutor(apiKey),
+        systemPrompt = &#34;&#34;&#34;
+            너는 컴퓨터공학과 학생의 과제와 시험 준비를 도와주는 조교야.
+
+            규칙:
+            - 핵심만 간결하게 설명해. 대학생은 바쁘니까.
+            - 과제에 바로 쓸 수 있는 실용적인 답변을 해.
+            - 코드 관련 질문에는 C++로 예시를 들어줘.
+            - 개념 설명은 &#34;한 줄 요약 → 상세 설명&#34; 순서로 해.
+        &#34;&#34;&#34;.trimIndent(),
+        llmModel = GoogleModels.Gemini2_5Flash
+    )
+
+    val response = agent.run(&#34;AVL Tree가 뭐야? BST랑 뭐가 달라?&#34;)
+    println(response)
+}
+</code></pre>
+<h2 is-upgraded>실행 확인</h2>
+<p>Positive : <code>systemPrompt</code>를 &#34;교수님처럼 설명해줘&#34;로 바꾸면 어떻게 달라지는지 직접 바꿔보세요. 같은 질문이라도 System Prompt에 따라 &#34;교수님 스타일&#34; vs &#34;친구 스타일&#34; 답변이 나옵니다. 에이전트를 만드는 핵심은 <strong>역할 정의</strong>입니다. 역할이 명확할수록 답변 품질이 올라갑니다.</p>
+<h2 is-upgraded>트러블슈팅</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>오류</p>
+</td><td colspan="1" rowspan="1"><p>해결법</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>error("GOOGLE_API_KEY ...")</code> 발생</p>
+</td><td colspan="1" rowspan="1"><p>환경변수 설정 재확인</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>401/403 API 오류</p>
+</td><td colspan="1" rowspan="1"><p>Google AI Studio에서 Key 재발급</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>응답이 영어로 나옴</p>
+</td><td colspan="1" rowspan="1"><p>System Prompt에 &#34;항상 한국어로 답변해&#34; 추가</p>
+</td></tr>
+</table>
+<p>에이전트가 AVL Tree와 BST의 차이를 한국어로 설명하면 이 단계 완료입니다.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="강의자료 읽기 &#43; 복습 노트 생성" duration="10">
+        <h2 is-upgraded>Koog 핵심 컴포넌트</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>어노테이션/클래스</p>
+</td><td colspan="1" rowspan="1"><p>역할</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>@Tool</code></p>
+</td><td colspan="1" rowspan="1"><p>함수를 에이전트가 사용할 수 있는 도구로 선언하는 어노테이션</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>@LLMDescription</code></p>
+</td><td colspan="1" rowspan="1"><p>에이전트(LLM)에게 이 도구와 파라미터가 무엇인지 설명하는 어노테이션. 설명이 부정확하면 도구를 제대로 못 쓴다</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>ToolRegistry</code></p>
+</td><td colspan="1" rowspan="1"><p>에이전트가 사용할 Tool들을 모아두는 저장소</p>
+</td></tr>
+</table>
+<h2 is-upgraded>예제 시나리오</h2>
+<ol type="1">
+<li>에이전트가 <code>readFile</code> 도구로 강의 노트(<code>week07-bst-basics.md</code>)를 읽는다</li>
+<li>핵심 내용을 정리해서 <code>saveNote</code> 도구로 <code>notes/</code> 폴더에 저장한다</li>
+<li>학생은 &#34;Week 7 강의자료 복습 정리해줘&#34; 한 마디만 하면 된다</li>
+</ol>
+<h2 is-upgraded>ReadFileTool.kt 구현</h2>
+<p><code>tools/ReadFileTool.kt</code> 파일을 열어봅니다.</p>
+<pre><code language="language-kotlin" class="language-kotlin">package com.example.studybuddy.tools
+
+import ai.koog.agents.core.tools.annotations.Tool
+import ai.koog.agents.core.tools.annotations.LLMDescription
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.readText
+
+@Tool
+@LLMDescription(&#34;강의 노트, 과제, 소스 코드 등 파일을 읽어서 내용을 반환합니다&#34;)
+fun readFile(
+    @LLMDescription(&#34;읽을 파일 경로 (예: lecture-notes/week07-bst-basics.md)&#34;)
+    filePath: String
+): String {
+    val path = Path(filePath)
+    if (!path.exists()) return &#34;파일을 찾을 수 없습니다: $filePath&#34;
+    return path.readText()
+}
+</code></pre>
+<h2 is-upgraded>SaveNoteTool.kt 구현</h2>
+<p><code>tools/SaveNoteTool.kt</code> 파일을 열어봅니다.</p>
+<pre><code language="language-kotlin" class="language-kotlin">package com.example.studybuddy.tools
+
+import ai.koog.agents.core.tools.annotations.Tool
+import ai.koog.agents.core.tools.annotations.LLMDescription
+import kotlin.io.path.Path
+import kotlin.io.path.writeText
+import kotlin.io.path.createDirectories
+
+@Tool
+@LLMDescription(&#34;복습 노트나 정리 내용을 파일로 저장합니다&#34;)
+fun saveNote(
+    @LLMDescription(&#34;저장할 파일명 (예: week07-bst-summary.md)&#34;)
+    fileName: String,
+    @LLMDescription(&#34;저장할 내용&#34;)
+    content: String
+): String {
+    val path = Path(&#34;notes/$fileName&#34;)
+    path.parent?.createDirectories()
+    path.writeText(content)
+    return &#34;노트가 notes/$fileName 에 저장되었습니다!&#34;
+}
+</code></pre>
+<h2 is-upgraded>ToolRegistry 연결</h2>
+<p><code>Main.kt</code>에서 ToolRegistry를 만들고 에이전트에 연결합니다.</p>
+<pre><code language="language-kotlin" class="language-kotlin">import com.example.studybuddy.tools.readFile
+import com.example.studybuddy.tools.saveNote
+import ai.koog.agents.core.tools.ToolRegistry
+
+val toolRegistry = ToolRegistry {
+    tool(::readFile)
+    tool(::saveNote)
+}
+
+val agent = AIAgent(
+    promptExecutor = simpleGoogleAIExecutor(apiKey),
+    systemPrompt = studyBuddyPrompt,
+    llmModel = GoogleModels.Gemini2_5Flash,
+    toolRegistry = toolRegistry
+)
+
+val response = agent.run(
+    &#34;lecture-notes/week07-bst-basics.md 강의자료를 읽고, 핵심만 정리해서 복습 노트로 저장해줘&#34;
+)
+println(response)
+</code></pre>
+<p>Positive : <code>@LLMDescription</code>이 에이전트가 Tool을 이해하는 핵심입니다. 설명이 모호하면 도구를 엉뚱하게 쓰거나 아예 안 씁니다. 에이전트는 스스로 &#34;파일 읽기 → 내용 분석 → 노트 저장&#34; 순서를 판단합니다. 이것이 바로 <strong>ReAct 패턴</strong> (Reasoning + Acting)입니다.</p>
+<h2 is-upgraded>트러블슈팅</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>오류</p>
+</td><td colspan="1" rowspan="1"><p>해결법</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>&#34;파일을 찾을 수 없습니다&#34;</p>
+</td><td colspan="1" rowspan="1"><p>Working directory 확인. IntelliJ Run Config에서 Working directory를 프로젝트 루트로 설정</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Tool이 호출되지 않음</p>
+</td><td colspan="1" rowspan="1"><p>System Prompt에 &#34;반드시 도구를 사용해서 작업해&#34; 지시 추가</p>
+</td></tr>
+</table>
+<p><code>notes/</code> 폴더에 복습 노트 파일이 자동으로 생성되면 이 단계 완료입니다.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="과제 분석 &#43; 노트 활용" duration="10">
+        <h2 is-upgraded>Koog 핵심 컴포넌트</h2>
+<ul>
+<li><strong>Multi Tool 조합</strong>: 에이전트가 여러 도구를 자율적으로 선택하고 순서를 결정해서 사용한다</li>
+<li><strong>Tool 간 연계 동작</strong>: 한 Tool의 결과가 다음 Tool의 입력으로 이어지는 파이프라인</li>
+</ul>
+<h2 is-upgraded>예제 시나리오</h2>
+<ol type="1">
+<li>에이전트가 <code>listFiles</code>로 <code>notes/</code> 폴더에 어떤 복습 노트가 있는지 파악한다</li>
+<li><code>readFile</code>로 과제 요구사항, 기존 복습 노트, 학생 코드를 모두 읽는다</li>
+<li><code>saveNote</code>로 과제 분석 결과와 풀이 가이드를 저장한다</li>
+<li>학생 코드의 버그도 찾아서 알려준다</li>
+</ol>
+<h2 is-upgraded>ListFilesTool.kt 구현</h2>
+<p><code>tools/ListFilesTool.kt</code> 파일을 열어봅니다.</p>
+<pre><code language="language-kotlin" class="language-kotlin">package com.example.studybuddy.tools
+
+import ai.koog.agents.core.tools.annotations.Tool
+import ai.koog.agents.core.tools.annotations.LLMDescription
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
+
+@Tool
+@LLMDescription(&#34;디렉토리 내 파일 목록을 조회합니다&#34;)
+fun listFiles(
+    @LLMDescription(&#34;조회할 디렉토리 경로 (예: notes/)&#34;)
+    directory: String
+): String {
+    val dir = Path(directory)
+    if (!dir.exists() || !dir.isDirectory()) return &#34;디렉토리를 찾을 수 없습니다: $directory&#34;
+    return dir.listDirectoryEntries()
+        .joinToString(&#34;\n&#34;) { &#34;- ${it.name}&#34; }
+        .ifEmpty { &#34;(빈 디렉토리)&#34; }
+}
+</code></pre>
+<h2 is-upgraded>ToolRegistry 업데이트</h2>
+<p><code>Main.kt</code>에서 ToolRegistry에 <code>listFiles</code>를 추가합니다.</p>
+<pre><code language="language-kotlin" class="language-kotlin">import com.example.studybuddy.tools.listFiles
+
+val toolRegistry = ToolRegistry {
+    tool(::readFile)
+    tool(::saveNote)
+    tool(::listFiles)
+}
+</code></pre>
+<h2 is-upgraded>에이전트 실행</h2>
+<pre><code language="language-kotlin" class="language-kotlin">val response = agent.run(&#34;&#34;&#34;
+    1. assignments/hw-avl-tree.md 과제 요구사항을 읽어줘
+    2. notes/ 폴더에 있는 기존 복습 노트도 참고해줘
+    3. student-code/avl_tree.cpp 학생 코드를 분석해줘
+    4. 과제 풀이 가이드를 만들어서 notes/hw-avl-guide.md로 저장해줘
+&#34;&#34;&#34;)
+</code></pre>
+<p>Positive : 에이전트가 <code>listFiles</code> → <code>readFile</code>(여러 번) → <code>saveNote</code> 순서를 <strong>스스로 결정</strong>합니다. 순서를 직접 프로그래밍하지 않았습니다. 이전 단계에서 쌓아둔 BST 복습 노트를 참고해서 AVL 과제를 분석합니다. <strong>지식이 축적될수록 에이전트가 더 잘합니다</strong>.</p>
+<h2 is-upgraded>학생 코드 버그 확인</h2>
+<p>에이전트가 <code>student-code/avl_tree.cpp</code>를 분석할 때 버그 2개를 발견하는지 확인해보세요.</p>
+<ul>
+<li><code>getBalance()</code>: <code>right - left</code>로 계산 (정확한 것은 <code>left - right</code>)</li>
+<li><code>rightRotate()</code>: 회전 후 높이 업데이트 누락</li>
+</ul>
+<h2 is-upgraded>트러블슈팅</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>오류</p>
+</td><td colspan="1" rowspan="1"><p>해결법</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>에이전트가 Tool을 순서대로 안 씀</p>
+</td><td colspan="1" rowspan="1"><p>System Prompt에 작업 순서를 명시적으로 지정</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>코드 분석이 부정확</p>
+</td><td colspan="1" rowspan="1"><p>&#34;문법 오류보다 로직 오류 위주로 분석해&#34; 지시 추가</p>
+</td></tr>
+</table>
+<p>에이전트가 과제 요구사항, 기존 노트, 학생 코드를 모두 읽고 풀이 가이드를 생성하면 이 단계 완료입니다.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ChatMemory로 대화형 과제 도움" duration="8">
+        <h2 is-upgraded>Koog 핵심 컴포넌트</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>클래스/함수</p>
+</td><td colspan="1" rowspan="1"><p>역할</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>ChatMemory</code></p>
+</td><td colspan="1" rowspan="1"><p>에이전트가 이전 대화를 기억하게 해주는 Feature</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>InMemoryChatHistoryProvider</code></p>
+</td><td colspan="1" rowspan="1"><p>메모리에 대화 히스토리를 저장하는 구현체</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>windowSize(20)</code></p>
+</td><td colspan="1" rowspan="1"><p>최근 20개 메시지까지만 유지. 오래된 것은 자동으로 잊는다 (토큰 절약)</p>
+</td></tr>
+</table>
+<h2 is-upgraded>ChatMemory가 필요한 이유</h2>
+<p><code>agent.run()</code>은 기본적으로 매 호출마다 독립적인 대화로 취급합니다. 이전 대화를 기억하려면 <code>ChatMemory</code> Feature를 설치해야 합니다.</p>
+<pre><code>ChatMemory 없을 때:
+학생 &gt; AVL Tree에서 LL 회전이 뭐야?
+에이전트 &gt; (LL 회전 설명)
+학생 &gt; 그러면 LR 회전은 그거랑 뭐가 달라?
+에이전트 &gt; ??? (이전 대화를 모름 — &#34;그거&#34;가 뭔지 모른다)
+
+ChatMemory 있을 때:
+학생 &gt; AVL Tree에서 LL 회전이 뭐야?
+에이전트 &gt; (LL 회전 설명)
+학생 &gt; 그러면 LR 회전은 그거랑 뭐가 달라?
+에이전트 &gt; LL과 비교하면, LR은 ... (이전 맥락을 기억)
+</code></pre>
+<h2 is-upgraded>ChatMemory 설치</h2>
+<pre><code language="language-kotlin" class="language-kotlin">import ai.koog.agents.chatMemory.feature.ChatMemory
+import ai.koog.agents.chatMemory.InMemoryChatHistoryProvider
+
+val agent = AIAgent(
+    promptExecutor = simpleGoogleAIExecutor(apiKey),
+    systemPrompt = studyBuddyPrompt,
+    llmModel = GoogleModels.Gemini2_5Flash,
+    toolRegistry = toolRegistry
+) {
+    // ChatMemory 설치: 이전 대화를 기억하게 만듦
+    install(ChatMemory) {
+        chatHistoryProvider = InMemoryChatHistoryProvider()
+        windowSize(20) // 최근 20개 메시지까지 기억
+    }
+}
+</code></pre>
+<h2 is-upgraded>대화형 과제 도움 세션 구현</h2>
+<pre><code language="language-kotlin" class="language-kotlin">// 대화형 과제 도움 세션
+suspend fun runStudySession(apiKey: String) {
+    val toolRegistry = ToolRegistry {
+        tool(::readFile)
+        tool(::saveNote)
+        tool(::listFiles)
+        tool(::generateExamPrep)
+    }
+
+    val agent = AIAgent(
+        promptExecutor = simpleGoogleAIExecutor(apiKey),
+        systemPrompt = studyBuddyPrompt,
+        llmModel = GoogleModels.Gemini2_5Flash,
+        toolRegistry = toolRegistry
+    ) {
+        install(ChatMemory) {
+            chatHistoryProvider = InMemoryChatHistoryProvider()
+            windowSize(20)
+        }
+    }
+
+    println(&#34;=== 과제 도우미 시작 ===&#34;)
+    println(&#34;질문을 입력하세요 (종료: exit)\n&#34;)
+
+    while (true) {
+        print(&#34;학생 &gt; &#34;)
+        val input = readLine() ?: break
+        if (input == &#34;exit&#34;) break
+
+        val response = agent.run(input)
+        println(&#34;\n조교 &gt; $response\n&#34;)
+    }
+}
+</code></pre>
+<h2 is-upgraded>직접 해보기</h2>
+<p>프로그램을 실행하고 이 순서로 질문해봅니다.</p>
+<pre><code>학생 &gt; AVL Tree에서 LL 회전이 뭐야?
+학생 &gt; 그러면 LR 회전은 그거랑 뭐가 달라?
+학생 &gt; 내 코드에서 회전 부분 다시 봐줘
+</code></pre>
+<p>마지막 질문에서 &#34;내 코드&#34;와 &#34;회전&#34;을 이전 맥락으로 이해하는지 확인해보세요.</p>
+<p>Positive : <code>install(ChatMemory)</code> 한 줄이 &#34;맥락 없는 봇&#34;과 &#34;대화가 되는 에이전트&#34;의 차이입니다. <code>windowSize(20)</code>는 토큰 제한 내에서 최근 대화만 유지하는 현실적인 전략입니다. 실제 서비스에서도 이렇게 합니다.</p>
+<p>Negative : <code>install(...)</code> 블록이 <code>AIAgent(...)</code> 람다 <strong>안에</strong> 있어야 합니다. 밖에 있으면 동작하지 않습니다.</p>
+<h2 is-upgraded>트러블슈팅</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>오류</p>
+</td><td colspan="1" rowspan="1"><p>해결법</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>이전 대화를 기억 못함</p>
+</td><td colspan="1" rowspan="1"><p><code>install(ChatMemory)</code> 블록이 AIAgent 람다 안에 있는지 확인</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>답변이 느려짐</p>
+</td><td colspan="1" rowspan="1"><p><code>windowSize</code>를 10으로 줄여서 컨텍스트 크기 조절</p>
+</td></tr>
+</table>
+<p>&#34;아까 설명한 LL 회전&#34;처럼 이전 맥락 참조가 동작하면 이 단계 완료입니다.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="시험 대비 자료 자동 생성" duration="10">
+        <h2 is-upgraded>Koog 핵심 컴포넌트</h2>
+<ul>
+<li><strong>Tool 확장</strong>: 기존 ToolRegistry에 새 Tool을 추가하는 패턴</li>
+<li><strong>여러 파일 종합 처리</strong>: 에이전트가 여러 노트를 읽고 하나의 결과물로 합치는 패턴</li>
+<li><strong>LLM Wiki 패턴</strong>: 지식이 축적될수록 생성되는 자료의 품질이 올라가는 패턴</li>
+</ul>
+<h2 is-upgraded>핵심 스토리</h2>
+<p>이전 단계에서 생성한 복습 노트들과 과제 분석 결과가 이미 <code>notes/</code>에 쌓여 있습니다. 이 축적된 지식을 종합해서 <strong>3가지 시험 대비 자료</strong>를 자동으로 만듭니다.</p>
+<h2 is-upgraded>GenerateExamPrepTool.kt 구현</h2>
+<p><code>tools/GenerateExamPrepTool.kt</code> 파일을 열어봅니다.</p>
+<pre><code language="language-kotlin" class="language-kotlin">package com.example.studybuddy.tools
+
+import ai.koog.agents.core.tools.annotations.Tool
+import ai.koog.agents.core.tools.annotations.LLMDescription
+import kotlin.io.path.Path
+import kotlin.io.path.writeText
+import kotlin.io.path.createDirectories
+
+@Tool
+@LLMDescription(&#34;축적된 복습 노트를 종합하여 시험 대비 자료(치트시트, 예상문제, 개념맵)를 생성합니다&#34;)
+fun generateExamPrep(
+    @LLMDescription(&#34;생성할 자료 유형: cheatsheet, practice-exam, concept-map&#34;)
+    type: String,
+    @LLMDescription(&#34;생성된 자료 내용&#34;)
+    content: String
+): String {
+    val fileName = when (type) {
+        &#34;cheatsheet&#34; -&gt; &#34;cheatsheet.md&#34;
+        &#34;practice-exam&#34; -&gt; &#34;practice-exam.md&#34;
+        &#34;concept-map&#34; -&gt; &#34;concept-map.md&#34;
+        else -&gt; &#34;$type.md&#34;
+    }
+    val path = Path(&#34;exam-prep/$fileName&#34;)
+    path.parent?.createDirectories()
+    path.writeText(content)
+    return &#34;시험 대비 자료가 exam-prep/$fileName 에 저장되었습니다!&#34;
+}
+</code></pre>
+<h2 is-upgraded>ToolRegistry 업데이트</h2>
+<p><code>Main.kt</code>에서 ToolRegistry에 <code>generateExamPrep</code>을 추가합니다.</p>
+<pre><code language="language-kotlin" class="language-kotlin">import com.example.studybuddy.tools.generateExamPrep
+
+val toolRegistry = ToolRegistry {
+    tool(::readFile)
+    tool(::saveNote)
+    tool(::listFiles)
+    tool(::generateExamPrep)
+}
+</code></pre>
+<h2 is-upgraded>에이전트 실행</h2>
+<pre><code language="language-kotlin" class="language-kotlin">val response = agent.run(&#34;&#34;&#34;
+    notes/ 폴더에 있는 모든 복습 노트를 읽고,
+    시험 대비 자료 3종을 생성해줘:
+    1. 원페이저 치트시트 (A4 1장 분량, 핵심 키워드 + 공식만)
+    2. 예상 문제 3개 + 풀이 (과제 패턴 기반)
+    3. 개념 연결 맵 (개념 간 관계)
+&#34;&#34;&#34;)
+</code></pre>
+<p>Positive : <strong>&#34;매주 5분 투자한 복습 노트가 시험 자료로 변환되는 순간&#34;</strong> — 이것이 이 코드랩의 하이라이트입니다. <code>notes/</code>에 노트가 많을수록 생성되는 자료의 품질이 높아집니다. 지식 복리 효과입니다.</p>
+<h2 is-upgraded>트러블슈팅</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>오류</p>
+</td><td colspan="1" rowspan="1"><p>해결법</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>notes/에 파일이 없음</p>
+</td><td colspan="1" rowspan="1"><p>이전 단계를 먼저 실행했는지 확인</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>자료 품질이 낮음</p>
+</td><td colspan="1" rowspan="1"><p>System Prompt에 &#34;시험에 나올 확률이 높은 내용 위주로&#34; 지시 추가</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>exam-prep/ 폴더가 생성 안 됨</p>
+</td><td colspan="1" rowspan="1"><p><code>GenerateExamPrepTool.kt</code>의 <code>createDirectories()</code> 호출 확인</p>
+</td></tr>
+</table>
+<p><code>exam-prep/</code> 폴더에 <code>cheatsheet.md</code>, <code>practice-exam.md</code>, <code>concept-map.md</code> 3개 파일이 자동으로 생성되면 이 단계 완료입니다.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Multi-Agent — 학습 전문가 팀" duration="8">
+        <h2 is-upgraded>Koog 핵심 컴포넌트</h2>
+<ul>
+<li><strong>복수 AIAgent 인스턴스</strong>: 각자 다른 System Prompt와 Tool 조합을 가진 전문가 에이전트들</li>
+<li><strong>에이전트 간 결과 전달</strong>: 파일 시스템을 공유 메모리로 활용해서 에이전트 간에 결과를 전달</li>
+<li><strong>순차 오케스트레이션</strong>: 코틀린 함수로 에이전트 실행 순서를 제어</li>
+</ul>
+<h2 is-upgraded>예제 시나리오</h2>
+<p>&#34;이번 주 강의자료 복습하고, 과제도 분석해주고, 시험 대비 자료도 업데이트해줘&#34; — 한 번의 요청으로 3명의 전문가가 순차적으로 협력합니다.</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>전문가 에이전트</p>
+</td><td colspan="1" rowspan="1"><p>역할</p>
+</td><td colspan="1" rowspan="1"><p>입력 → 출력</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>복습 정리가</strong></p>
+</td><td colspan="1" rowspan="1"><p>강의자료 → 핵심 요약 노트</p>
+</td><td colspan="1" rowspan="1"><p><code>lecture-notes/</code> → <code>notes/</code></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>과제 도우미</strong></p>
+</td><td colspan="1" rowspan="1"><p>과제 + 노트 + 코드 → 풀이 가이드</p>
+</td><td colspan="1" rowspan="1"><p><code>assignments/</code> + <code>notes/</code> + <code>student-code/</code> → <code>notes/</code></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>시험 대비가</strong></p>
+</td><td colspan="1" rowspan="1"><p>축적된 노트 → 치트시트 + 예상문제</p>
+</td><td colspan="1" rowspan="1"><p><code>notes/</code> → <code>exam-prep/</code></p>
+</td></tr>
+</table>
+<h2 is-upgraded>멀티에이전트 구현</h2>
+<pre><code language="language-kotlin" class="language-kotlin">import ai.koog.agents.core.agent.AIAgent
+import ai.koog.agents.core.tools.ToolRegistry
+import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
+import ai.koog.prompt.executor.clients.google.GoogleModels
+import com.example.studybuddy.tools.*
+
+// 순차 오케스트레이션 — 각 전문가 에이전트를 역할별 System Prompt로 생성
+suspend fun runStudyTeam(apiKey: String) {
+    val reviewerAgent = AIAgent(
+        promptExecutor = simpleGoogleAIExecutor(apiKey),
+        systemPrompt = &#34;&#34;&#34;
+            너는 강의자료 복습 전문가야.
+            강의 노트를 읽고 핵심 개념만 추출해서 간결한 복습 노트를 만들어.
+            키워드 중심, 시험에 나올 내용 위주로 정리해.
+            반드시 도구를 사용해서 파일을 읽고 저장해.
+        &#34;&#34;&#34;.trimIndent(),
+        llmModel = GoogleModels.Gemini2_5Flash,
+        toolRegistry = ToolRegistry {
+            tool(::readFile)
+            tool(::saveNote)
+        }
+    )
+
+    val assignmentAgent = AIAgent(
+        promptExecutor = simpleGoogleAIExecutor(apiKey),
+        systemPrompt = &#34;&#34;&#34;
+            너는 과제 분석 전문가야.
+            과제 요구사항을 분석하고, 기존 복습 노트를 참고해서 풀이 전략을 세워.
+            학생 코드가 있으면 버그도 찾아줘.
+            반드시 도구를 사용해서 파일을 읽고 저장해.
+        &#34;&#34;&#34;.trimIndent(),
+        llmModel = GoogleModels.Gemini2_5Flash,
+        toolRegistry = ToolRegistry {
+            tool(::readFile)
+            tool(::listFiles)
+            tool(::saveNote)
+        }
+    )
+
+    val examPrepAgent = AIAgent(
+        promptExecutor = simpleGoogleAIExecutor(apiKey),
+        systemPrompt = &#34;&#34;&#34;
+            너는 시험 대비 자료 전문가야.
+            축적된 복습 노트를 종합해서 치트시트와 예상문제를 만들어.
+            치트시트는 A4 1장 이내, 예상문제는 과제 패턴 기반으로 3문제.
+            반드시 도구를 사용해서 파일을 읽고 저장해.
+        &#34;&#34;&#34;.trimIndent(),
+        llmModel = GoogleModels.Gemini2_5Flash,
+        toolRegistry = ToolRegistry {
+            tool(::readFile)
+            tool(::listFiles)
+            tool(::generateExamPrep)
+        }
+    )
+
+    println(&#34;=== 학습 전문가 팀 가동! ===\n&#34;)
+
+    // 1단계: 복습 정리
+    println(&#34;[1/3] 복습 정리가가 강의자료를 분석합니다...&#34;)
+    val reviewResult = reviewerAgent.run(
+        &#34;lecture-notes/week08-avl-tree.md 강의자료를 읽고 복습 노트를 만들어줘&#34;
+    )
+    println(&#34;복습 완료: $reviewResult\n&#34;)
+
+    // 2단계: 과제 분석 (복습 노트를 참조)
+    println(&#34;[2/3] 과제 도우미가 과제를 분석합니다...&#34;)
+    val assignmentResult = assignmentAgent.run(
+        &#34;assignments/hw-avl-tree.md 과제를 분석하고, notes/ 폴더의 복습 노트를 참고해서 풀이 가이드를 만들어줘. student-code/avl_tree.cpp도 확인해줘.&#34;
+    )
+    println(&#34;과제 분석 완료: $assignmentResult\n&#34;)
+
+    // 3단계: 시험 대비 자료 생성 (모든 노트를 종합)
+    println(&#34;[3/3] 시험 대비가가 자료를 생성합니다...&#34;)
+    val examPrepResult = examPrepAgent.run(
+        &#34;notes/ 폴더의 모든 노트를 읽고 치트시트와 예상문제를 만들어줘&#34;
+    )
+    println(&#34;시험 대비 자료 완료: $examPrepResult&#34;)
+
+    println(&#34;\n=== 전문가 팀 작업 완료! ===&#34;)
+}
+</code></pre>
+<p>Positive : 각 에이전트는 <strong>다른 System Prompt + 다른 Tool 조합</strong>을 가집니다. 전문 분야가 다른 것입니다. 범용 에이전트 하나보다 전문 에이전트 여럿이 더 잘합니다. 결과가 <strong>파이프라인처럼 흐릅니다</strong>: 복습 노트(파일) → 과제 가이드(파일) → 시험 자료(파일). 파일 시스템이 에이전트 간 공유 메모리 역할을 합니다.</p>
+<h2 is-upgraded>트러블슈팅</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>오류</p>
+</td><td colspan="1" rowspan="1"><p>해결법</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>에이전트가 중간에 멈춤</p>
+</td><td colspan="1" rowspan="1"><p>Rate Limit(429) 가능성 — 호출 사이에 <code>delay(1000)</code> 추가</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>결과물이 비어있음</p>
+</td><td colspan="1" rowspan="1"><p>각 에이전트의 System Prompt에 &#34;반드시 도구를 사용해&#34; 추가</p>
+</td></tr>
+</table>
+<p>3개 에이전트가 순차 실행되어 <code>notes/</code>와 <code>exam-prep/</code> 폴더에 결과물이 생성되면 이 단계 완료입니다.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="마무리" duration="0">
+        <p>축하합니다! Koog 프레임워크로 완전한 AI 학습 도우미 에이전트를 완성했습니다.</p>
+<h2 is-upgraded>구현한 내용 정리</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>단계</p>
+</td><td colspan="1" rowspan="1"><p>Koog 개념</p>
+</td><td colspan="1" rowspan="1"><p>무엇을 만들었나</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>환경 설정</p>
+</td><td colspan="1" rowspan="1"><p>환경 설정</p>
+</td><td colspan="1" rowspan="1"><p>개발 환경 + API Key</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>첫 에이전트</p>
+</td><td colspan="1" rowspan="1"><p>AIAgent, systemPrompt</p>
+</td><td colspan="1" rowspan="1"><p>역할을 가진 첫 에이전트</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>강의자료 읽기</p>
+</td><td colspan="1" rowspan="1"><p>@Tool, ToolRegistry</p>
+</td><td colspan="1" rowspan="1"><p>파일 읽기 + 노트 저장 도구</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>과제 분석</p>
+</td><td colspan="1" rowspan="1"><p>Multi Tool 조합</p>
+</td><td colspan="1" rowspan="1"><p>과제 분석 + 코드 리뷰 에이전트</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>ChatMemory</p>
+</td><td colspan="1" rowspan="1"><p>ChatMemory Feature</p>
+</td><td colspan="1" rowspan="1"><p>대화 맥락을 기억하는 에이전트</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>시험 대비</p>
+</td><td colspan="1" rowspan="1"><p>Tool 확장, 지식 종합</p>
+</td><td colspan="1" rowspan="1"><p>시험 대비 자료 자동 생성기</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Multi-Agent</p>
+</td><td colspan="1" rowspan="1"><p>Multi-Agent Orchestration</p>
+</td><td colspan="1" rowspan="1"><p>학습 전문가 팀</p>
+</td></tr>
+</table>
+<h2 is-upgraded>배운 핵심 개념</h2>
+<ul>
+<li><strong>에이전트 루프</strong>: LLM이 도구를 반복 호출하며 목표를 달성하는 ReAct 패턴</li>
+<li><strong>도구 설계</strong>: <code>@LLMDescription</code>이 명확할수록 에이전트가 올바른 도구를 선택</li>
+<li><strong>지식 축적</strong>: 매주 복습 노트가 쌓일수록 시험 자료의 품질이 올라가는 복리 효과</li>
+<li><strong>멀티에이전트</strong>: 전문 에이전트를 역할별로 분리하면 범용 에이전트보다 더 좋은 결과</li>
+</ul>
+<h2 is-upgraded>더 해볼 것들</h2>
+<ul>
+<li>다른 과목 강의자료도 추가해서 에이전트에게 던져보기</li>
+<li>플래시카드 생성 Tool 추가하기</li>
+<li>학점 계산기 Tool 추가하기</li>
+<li>Koog A2A 프로토콜로 에이전트 간 HTTP 통신 도전 (심화)</li>
+</ul>
+<h2 is-upgraded>전체 트러블슈팅 가이드</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>오류</p>
+</td><td colspan="1" rowspan="1"><p>원인</p>
+</td><td colspan="1" rowspan="1"><p>해결법</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>GOOGLE_API_KEY 환경변수를 설정해주세요!</code></p>
+</td><td colspan="1" rowspan="1"><p>환경변수 미설정</p>
+</td><td colspan="1" rowspan="1"><p>IntelliJ Run Config &gt; Environment variables</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>401 Unauthorized</code></p>
+</td><td colspan="1" rowspan="1"><p>API Key 무효</p>
+</td><td colspan="1" rowspan="1"><p>Google AI Studio에서 재발급</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>Gradle sync failed</code></p>
+</td><td colspan="1" rowspan="1"><p>JDK 불일치</p>
+</td><td colspan="1" rowspan="1"><p>JDK 21 설치 후 Project Structure에서 선택</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>Unresolved reference: simpleGoogleAIExecutor</code></p>
+</td><td colspan="1" rowspan="1"><p>의존성 미설치</p>
+</td><td colspan="1" rowspan="1"><p>build.gradle.kts에서 <code>ai.koog:koog-agents:0.8.0</code> 확인 후 Gradle sync 재실행</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>파일을 찾을 수 없습니다</code></p>
+</td><td colspan="1" rowspan="1"><p>Working directory 불일치</p>
+</td><td colspan="1" rowspan="1"><p>Run Config &gt; Working directory를 프로젝트 루트로 설정</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Tool이 호출되지 않음</p>
+</td><td colspan="1" rowspan="1"><p>LLM이 Tool 불필요로 판단</p>
+</td><td colspan="1" rowspan="1"><p>System Prompt에 &#34;반드시 도구를 사용해&#34; 지시 추가</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>대화 맥락 기억 못함</p>
+</td><td colspan="1" rowspan="1"><p>ChatMemory 미설치</p>
+</td><td colspan="1" rowspan="1"><p>ChatMemory 단계의 <code>install(ChatMemory)</code> 위치 확인</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Rate Limit (429)</p>
+</td><td colspan="1" rowspan="1"><p>API 빈도 초과</p>
+</td><td colspan="1" rowspan="1"><p>호출 사이 <code>delay(1000)</code> 추가</p>
+</td></tr>
+</table>
+<h2 is-upgraded>참고 자료</h2>
+<ul>
+<li><a href="https://github.com/JetBrains/koog" target="_blank">Koog 공식 문서</a></li>
+</ul>
+<p>감사합니다!</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2026-04-25T19:41:13+09:00",
+  "id": "koog-study-buddy-agent",
+  "duration": 62,
+  "title": "과제 끝내기 에이전트 — Kotlin + Koog로 나만의 학습 도우미 만들기",
+  "authors": "GDG Android Korea",
+  "summary": "Koog 프레임워크를 활용한 대학생 과제 도우미 AI 에이전트 개발",
+  "source": "codelab.md",
+  "theme": "",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "ai",
+    "kotlin"
+  ],
+  "tags": [
+    "web"
+  ],
+  "feedback": "https://github.com/bw-ai/2026-bwai-campus-korea-ai-agent-with-kotlin/issues",
+  "url": "koog-study-buddy-agent"
+}
