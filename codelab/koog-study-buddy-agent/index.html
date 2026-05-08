@@ -198,7 +198,7 @@ git checkout initial
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p><code>simpleGoogleAIExecutor</code></p>
 </td><td colspan="1" rowspan="1"><p>Google Gemini API와 연결하는 실행기</p>
-</td><td colspan="1" rowspan="1"><p>API 클라이언트 (Retrofit과 비슷한 역할)</p>
+</td><td colspan="1" rowspan="1"><p>LLM과 통신하는 API 클라이언트</p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p><code>systemPrompt</code></p>
 </td><td colspan="1" rowspan="1"><p>에이전트의 역할과 행동 규칙을 정의하는 텍스트</p>
@@ -248,7 +248,7 @@ import kotlinx.coroutines.runBlocking
 </code></pre>
 <p>코드를 하나씩 살펴봅시다:</p>
 <ul>
-<li><strong><code>simpleGoogleAIExecutor(apiKey)</code></strong>: API Key로 Gemini에 연결합니다. Retrofit으로 API 클라이언트를 만드는 것과 비슷합니다.</li>
+<li><strong><code>simpleGoogleAIExecutor(apiKey)</code></strong>: API Key로 Gemini에 연결합니다. 에이전트가 LLM과 통신할 수 있게 해주는 클라이언트입니다.</li>
 <li><strong><code>systemPrompt</code></strong>: 이 에이전트의 페르소나를 정의합니다. &#34;조교&#34;라는 역할과 구체적인 행동 규칙 4가지를 지정했습니다.</li>
 <li><strong><code>GoogleModels.Gemini2_5Flash</code></strong>: 빠르고 효율적인 Gemini 2.5 Flash 모델을 사용합니다.</li>
 <li><strong><code>agent.run("...")</code></strong>: 에이전트에게 질문을 던지고 답변을 받습니다.</li>
@@ -912,7 +912,7 @@ suspend fun runStudyTeam(apiKey: String) {
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p><code>Command</code> 인터페이스</p>
 </td><td colspan="1" rowspan="1"><p>슬래시 명령어를 구조적으로 처리하는 패턴</p>
-</td><td colspan="1" rowspan="1"><p>새 명령어를 추가할 때 기존 코드를 수정하지 않아도 된다 (OCP)</p>
+</td><td colspan="1" rowspan="1"><p>새 명령어를 추가할 때 기존 코드를 수정하지 않아도 된다</p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p><code>CommandRegistry</code></p>
 </td><td colspan="1" rowspan="1"><p>명령어를 등록하고 입력에 맞는 명령어를 찾아 실행하는 저장소</p>
