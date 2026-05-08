@@ -26,7 +26,7 @@
                   id="koog-study-buddy-agent"
                   title="과제 끝내기 에이전트 — Kotlin &#43; Koog로 나만의 학습 도우미 만들기"
                   environment="web"
-                  feedback-link="https://github.com/bw-ai/2026-bwai-campus-korea-ai-agent-with-kotlin/issues">
+                  feedback-link="https://github.com/bw-ai/2026-Build-With-AI-GDG-On-Campus-Koog/issues">
     
       <google-codelab-step label="소개" duration="2">
         <p>&#34;매주 5분 투자한 게 시험 전날 치트시트가 되어 돌아온다&#34;</p>
@@ -85,10 +85,55 @@
 <pre><code language="language-powershell" class="language-powershell">$env:GOOGLE_API_KEY=&#34;여기에_발급받은_키_붙여넣기&#34;
 </code></pre>
 <p>Positive : IntelliJ에서 실행할 때는 Run &gt; Edit Configurations &gt; Environment variables에서 설정해도 됩니다.</p>
-<h2 is-upgraded>4. 프로젝트 열기</h2>
+<h2 is-upgraded>4. 프로젝트 클론</h2>
+<pre><code language="language-bash" class="language-bash">git clone https://github.com/l2hyunwoo/2026-Build-With-AI-GDG-On-Campus-Koog.git
+cd 2026-Build-With-AI-GDG-On-Campus-Koog
+</code></pre>
+<p>기본 브랜치(<code>initial</code>)에는 빌드 설정과 데이터 파일만 들어있는 빈 프로젝트입니다. 코드랩을 따라가며 직접 코드를 작성하세요.</p>
+<h3 is-upgraded>브랜치 구조</h3>
+<p>각 브랜치는 해당 단계까지의 <strong>완성된 코드</strong>를 포함합니다. 막히면 해당 브랜치로 전환해서 정답을 확인할 수 있습니다.</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>브랜치</p>
+</td><td colspan="1" rowspan="1"><p>내용</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>initial</code> (기본)</p>
+</td><td colspan="1" rowspan="1"><p>프로젝트 스켈레톤 — 빌드 설정 + 데이터 파일</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>page3</code></p>
+</td><td colspan="1" rowspan="1"><p>첫 에이전트 + 역할 부여</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>page4</code></p>
+</td><td colspan="1" rowspan="1"><p>강의자료 읽기 + 복습 노트 생성</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>page5</code></p>
+</td><td colspan="1" rowspan="1"><p>과제 분석 + 노트 활용</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>page6</code></p>
+</td><td colspan="1" rowspan="1"><p>ChatMemory 대화형 과제 도움</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>page7</code></p>
+</td><td colspan="1" rowspan="1"><p>시험 대비 자료 자동 생성</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>page8</code></p>
+</td><td colspan="1" rowspan="1"><p>Multi-Agent 학습 전문가 팀</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>page9</code></p>
+</td><td colspan="1" rowspan="1"><p>CLI 디자인 + 배포 설정</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>complete</code></p>
+</td><td colspan="1" rowspan="1"><p>최종 완성본</p>
+</td></tr>
+</table>
+<pre><code language="language-bash" class="language-bash"># 예: 5단계에서 막혔을 때 정답 확인
+git checkout page5
+
+# 다시 처음부터 직접 작성하고 싶을 때
+git checkout initial
+</code></pre>
+<h2 is-upgraded>5. 프로젝트 열기</h2>
 <p>프로젝트 폴더를 IntelliJ로 열고 Gradle sync가 완료될 때까지 기다립니다. 처음에는 라이브러리 다운로드로 시간이 걸릴 수 있습니다.</p>
-<h2 is-upgraded>5. 프로젝트 구조</h2>
-<pre><code>2026-bwai-campus-korea-ai-agent-with-kotlin/
+<h2 is-upgraded>6. 프로젝트 구조</h2>
+<pre><code>2026-Build-With-AI-GDG-On-Campus-Koog/
 ├── build.gradle.kts                    # Gradle 빌드 설정
 ├── src/main/kotlin/dev/community/gdg/campus/korea/koog/
 │   ├── Main.kt                         # 진입점

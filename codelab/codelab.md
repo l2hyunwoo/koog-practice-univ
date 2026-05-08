@@ -4,7 +4,7 @@ authors: GDG Android Korea
 categories: AI, Kotlin
 environments: Web
 status: Published
-feedback_link: https://github.com/bw-ai/2026-bwai-campus-korea-ai-agent-with-kotlin/issues
+feedback_link: https://github.com/bw-ai/2026-Build-With-AI-GDG-On-Campus-Koog/issues
 analytics_account:
 
 # 과제 끝내기 에이전트 — Kotlin + Koog로 나만의 학습 도우미 만들기
@@ -85,14 +85,47 @@ $env:GOOGLE_API_KEY="여기에_발급받은_키_붙여넣기"
 Positive
 : IntelliJ에서 실행할 때는 Run > Edit Configurations > Environment variables에서 설정해도 됩니다.
 
-### 4. 프로젝트 열기
+### 4. 프로젝트 클론
+
+```bash
+git clone https://github.com/l2hyunwoo/2026-Build-With-AI-GDG-On-Campus-Koog.git
+cd 2026-Build-With-AI-GDG-On-Campus-Koog
+```
+
+기본 브랜치(`initial`)에는 빌드 설정과 데이터 파일만 들어있는 빈 프로젝트입니다. 코드랩을 따라가며 직접 코드를 작성하세요.
+
+#### 브랜치 구조
+
+각 브랜치는 해당 단계까지의 **완성된 코드**를 포함합니다. 막히면 해당 브랜치로 전환해서 정답을 확인할 수 있습니다.
+
+| 브랜치 | 내용 |
+|--------|------|
+| `initial` (기본) | 프로젝트 스켈레톤 — 빌드 설정 + 데이터 파일 |
+| `page3` | 첫 에이전트 + 역할 부여 |
+| `page4` | 강의자료 읽기 + 복습 노트 생성 |
+| `page5` | 과제 분석 + 노트 활용 |
+| `page6` | ChatMemory 대화형 과제 도움 |
+| `page7` | 시험 대비 자료 자동 생성 |
+| `page8` | Multi-Agent 학습 전문가 팀 |
+| `page9` | CLI 디자인 + 배포 설정 |
+| `complete` | 최종 완성본 |
+
+```bash
+# 예: 5단계에서 막혔을 때 정답 확인
+git checkout page5
+
+# 다시 처음부터 직접 작성하고 싶을 때
+git checkout initial
+```
+
+### 5. 프로젝트 열기
 
 프로젝트 폴더를 IntelliJ로 열고 Gradle sync가 완료될 때까지 기다립니다. 처음에는 라이브러리 다운로드로 시간이 걸릴 수 있습니다.
 
-### 5. 프로젝트 구조
+### 6. 프로젝트 구조
 
 ```
-2026-bwai-campus-korea-ai-agent-with-kotlin/
+2026-Build-With-AI-GDG-On-Campus-Koog/
 ├── build.gradle.kts                    # Gradle 빌드 설정
 ├── src/main/kotlin/dev/community/gdg/campus/korea/koog/
 │   ├── Main.kt                         # 진입점
