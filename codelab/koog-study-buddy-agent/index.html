@@ -699,6 +699,249 @@ suspend fun runStudyTeam(apiKey: String) {
 
       </google-codelab-step>
     
+      <google-codelab-step label="CLI 앱 디자인 &#43; 배포" duration="10">
+        <h2 is-upgraded>핵심 컴포넌트</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>클래스/패턴</p>
+</td><td colspan="1" rowspan="1"><p>역할</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>Banner</code></p>
+</td><td colspan="1" rowspan="1"><p>CLI 실행 시 출력되는 환영/종료 화면. ASCII 아트로 앱의 첫인상을 만든다</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>Command</code> 인터페이스</p>
+</td><td colspan="1" rowspan="1"><p>슬래시 명령어(<code>/help</code>, <code>/exit</code> 등)를 구조적으로 처리하는 패턴</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>CommandRegistry</code></p>
+</td><td colspan="1" rowspan="1"><p>명령어를 등록하고 입력에 맞는 명령어를 찾아 실행하는 저장소</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>handleEvents</code></p>
+</td><td colspan="1" rowspan="1"><p>에이전트의 도구 호출 상태를 실시간으로 보여주는 이벤트 핸들러</p>
+</td></tr>
+</table>
+<h2 is-upgraded>예제 시나리오</h2>
+<p>지금까지 만든 에이전트를 실제 CLI 앱처럼 만들어봅니다. 터미널에서 <code>./gradlew run</code>으로 실행하면 배너가 출력되고, 슬래시 명령어를 지원하며, 도구 호출 과정이 실시간으로 표시됩니다.</p>
+<h2 is-upgraded>Banner.kt 구현</h2>
+<p><code>ui/Banner.kt</code> 파일을 생성합니다.</p>
+<pre><code language="language-kotlin" class="language-kotlin">package com.example.studybuddy.ui
+
+object Banner {
+    private const val VERSION = &#34;1.0.0&#34;
+
+    fun printWelcome() {
+        println(&#34;&#34;&#34;
+            |
+            |  ███████╗████████╗██╗   ██╗██████╗ ██╗   ██╗
+            |  ██╔════╝╚══██╔══╝██║   ██║██╔══██╗╚██╗ ██╔╝
+            |  ███████╗   ██║   ██║   ██║██║  ██║ ╚████╔╝
+            |  ╚════██║   ██║   ██║   ██║██║  ██║  ╚██╔╝
+            |  ███████║   ██║   ╚██████╔╝██████╔╝   ██║
+            |  ╚══════╝   ╚═╝    ╚═════╝ ╚═════╝    ╚═╝
+            |
+            |  ██████╗ ██╗   ██╗██████╗ ██████╗ ██╗   ██╗
+            |  ██╔══██╗██║   ██║██╔══██╗██╔══██╗╚██╗ ██╔╝
+            |  ██████╔╝██║   ██║██║  ██║██║  ██║ ╚████╔╝
+            |  ██╔══██╗██║   ██║██║  ██║██║  ██║  ╚██╔╝
+            |  ██████╔╝╚██████╔╝██████╔╝██████╔╝   ██║
+            |  ╚═════╝  ╚═════╝ ╚═════╝ ╚═════╝    ╚═╝
+            |
+            |  AI 학습 도우미 v${&#39;$&#39;}VERSION
+            |  강의 복습 · 과제 분석 · 시험 대비
+            |
+            |  ─────────────────────────────────────────
+            |  /help   사용 가능한 명령어 보기
+            |  /clear  대화 초기화
+            |  /exit   종료
+            |  ─────────────────────────────────────────
+            |
+            |  또는 바로 질문을 입력하세요!
+            |
+        &#34;&#34;&#34;.trimMargin())
+    }
+
+    fun printGoodbye() {
+        println(&#34;&#34;&#34;
+            |
+            |  ─────────────────────────────────────────
+            |  공부 화이팅! 다음에 또 만나요!
+            |  ─────────────────────────────────────────
+            |
+        &#34;&#34;&#34;.trimMargin())
+    }
+}
+</code></pre>
+<h2 is-upgraded>Command 패턴 구현</h2>
+<p><code>command/Command.kt</code> — 명령어 인터페이스와 레지스트리를 정의합니다.</p>
+<pre><code language="language-kotlin" class="language-kotlin">package com.example.studybuddy.command
+
+interface Command {
+    val name: String
+    val aliases: List&lt;String&gt; get() = emptyList()
+    val description: String
+    val usage: String get() = &#34;/$name&#34;
+    suspend fun execute(args: List&lt;String&gt; = emptyList()): CommandResult
+    fun matches(input: String): Boolean {
+        val commandName = input.removePrefix(&#34;/&#34;).split(&#34; &#34;).firstOrNull() ?: return false
+        return commandName == name || commandName in aliases
+    }
+}
+
+sealed class CommandResult {
+    data class Success(val message: String = &#34;&#34;) : CommandResult()
+    data class Error(val message: String) : CommandResult()
+    data object Exit : CommandResult()
+    data object ClearSession : CommandResult()
+}
+
+class CommandRegistry {
+    private val commands = mutableListOf&lt;Command&gt;()
+
+    fun register(command: Command) { commands.add(command) }
+    fun registerAll(vararg cmds: Command) { commands.addAll(cmds) }
+    fun getAllCommands(): List&lt;Command&gt; = commands.toList()
+
+    suspend fun execute(input: String): CommandResult? {
+        val command = commands.find { it.matches(input) } ?: return null
+        val args = input.removePrefix(&#34;/&#34;).split(&#34; &#34;).drop(1).filter { it.isNotBlank() }
+        return command.execute(args)
+    }
+}
+</code></pre>
+<p><code>command/HelpCommand.kt</code>, <code>command/ExitCommand.kt</code>, <code>command/ClearCommand.kt</code>도 각각 생성합니다.</p>
+<pre><code language="language-kotlin" class="language-kotlin">// HelpCommand.kt
+class HelpCommand(private val registry: CommandRegistry) : Command {
+    override val name = &#34;help&#34;
+    override val aliases = listOf(&#34;h&#34;, &#34;?&#34;)
+    override val description = &#34;사용 가능한 명령어를 보여줍니다&#34;
+    override suspend fun execute(args: List&lt;String&gt;): CommandResult {
+        println(&#34;\n📋 사용 가능한 명령어:\n&#34;)
+        registry.getAllCommands().sortedBy { it.name }.forEach { cmd -&gt;
+            val aliasText = if (cmd.aliases.isNotEmpty()) {
+                &#34; (${cmd.aliases.joinToString(&#34;, &#34;) { &#34;/$it&#34; }})&#34;
+            } else &#34;&#34;
+            println(&#34;  ${cmd.usage}$aliasText&#34;)
+            println(&#34;    ${cmd.description}&#34;)
+        }
+        println()
+        return CommandResult.Success()
+    }
+}
+
+// ExitCommand.kt
+class ExitCommand : Command {
+    override val name = &#34;exit&#34;
+    override val aliases = listOf(&#34;quit&#34;, &#34;q&#34;)
+    override val description = &#34;프로그램을 종료합니다&#34;
+    override suspend fun execute(args: List&lt;String&gt;) = CommandResult.Exit
+}
+
+// ClearCommand.kt
+class ClearCommand : Command {
+    override val name = &#34;clear&#34;
+    override val aliases = listOf(&#34;reset&#34;)
+    override val description = &#34;대화를 초기화하고 새로 시작합니다&#34;
+    override suspend fun execute(args: List&lt;String&gt;): CommandResult {
+        println(&#34;🔄 세션이 초기화되었습니다. 새로 시작합니다!&#34;)
+        return CommandResult.ClearSession
+    }
+}
+</code></pre>
+<h2 is-upgraded>EventHandler로 도구 호출 시각화</h2>
+<p>에이전트 생성 시 <code>handleEvents</code>를 설치하면 도구 호출 과정이 실시간으로 표시됩니다.</p>
+<pre><code language="language-kotlin" class="language-kotlin">import ai.koog.agents.features.eventHandler.feature.handleEvents
+
+val agent = AIAgent(
+    promptExecutor = simpleGoogleAIExecutor(apiKey),
+    systemPrompt = studyBuddyPrompt,
+    llmModel = GoogleModels.Gemini2_5Flash,
+    toolRegistry = toolRegistry
+) {
+    install(ChatMemory) {
+        chatHistoryProvider = InMemoryChatHistoryProvider()
+        windowSize(20)
+    }
+    handleEvents {
+        onToolCallStarting { println(&#34;  🔧 [도구 호출] ${it.toolName}...&#34;) }
+        onToolCallCompleted { println(&#34;  ✅ [도구 완료] ${it.toolName}&#34;) }
+    }
+}
+</code></pre>
+<h2 is-upgraded>Main.kt에 Command 패턴 통합</h2>
+<pre><code language="language-kotlin" class="language-kotlin">// CLI 대화형 세션 (Banner + Command 패턴 적용)
+suspend fun runStudySession(apiKey: String) {
+    val commandRegistry = CommandRegistry()
+    commandRegistry.registerAll(
+        HelpCommand(commandRegistry),
+        ExitCommand(),
+        ClearCommand()
+    )
+
+    Banner.printWelcome()
+    var agent = createAgent(apiKey)
+
+    while (true) {
+        print(&#34;학생 &gt; &#34;)
+        val input = readLine()?.trim() ?: break
+        if (input.isBlank()) continue
+
+        if (input.startsWith(&#34;/&#34;)) {
+            when (val result = commandRegistry.execute(input)) {
+                is CommandResult.Exit -&gt; { Banner.printGoodbye(); return }
+                is CommandResult.ClearSession -&gt; { agent = createAgent(apiKey); continue }
+                is CommandResult.Success -&gt; continue
+                is CommandResult.Error -&gt; { println(&#34;  ❌ ${result.message}&#34;); continue }
+                null -&gt; { println(&#34;  알 수 없는 명령어입니다. /help를 입력해보세요.&#34;); continue }
+            }
+        }
+
+        val response = agent.run(input)
+        println(&#34;\n조교 &gt; $response\n&#34;)
+    }
+}
+</code></pre>
+<h2 is-upgraded>CLI 앱으로 배포하기</h2>
+<p>Gradle <code>application</code> 플러그인이 이미 설정되어 있으므로, 배포 가능한 CLI 앱을 바로 만들 수 있습니다.</p>
+<p><code>build.gradle.kts</code>에 다음을 추가합니다.</p>
+<pre><code language="language-kotlin" class="language-kotlin">application {
+    mainClass.set(&#34;com.example.studybuddy.MainKt&#34;)
+    applicationDefaultJvmArgs = listOf(&#34;--enable-native-access=ALL-UNNAMED&#34;)
+}
+
+tasks.named&lt;JavaExec&gt;(&#34;run&#34;) {
+    standardInput = System.`in`
+}
+</code></pre>
+<p>배포용 패키지 생성:</p>
+<pre><code language="language-bash" class="language-bash"># ZIP 배포 패키지 생성
+./gradlew distZip
+
+# 또는 로컬 설치
+./gradlew installDist
+
+# 실행
+./build/install/study-buddy-agent-codelab/bin/study-buddy-agent-codelab
+</code></pre>
+<p><code>distZip</code>으로 생성된 <code>build/distributions/study-buddy-agent-codelab-1.0.0.zip</code>을 배포하면, 상대방은 압축을 풀고 <code>bin/study-buddy-agent-codelab</code> 스크립트로 바로 실행할 수 있습니다.</p>
+<p>Positive : Gradle <code>application</code> 플러그인은 <strong>시작 스크립트를 자동 생성</strong>합니다. <code>bin/</code> 폴더에 OS별 실행 파일(Linux/Mac용 sh, Windows용 bat)이 들어있어서 Java를 직접 호출할 필요가 없습니다. <code>GOOGLE_API_KEY</code> 환경변수만 설정하면 바로 실행됩니다.</p>
+<h2 is-upgraded>트러블슈팅</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>오류</p>
+</td><td colspan="1" rowspan="1"><p>해결법</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>standardInput</code>이 동작하지 않음</p>
+</td><td colspan="1" rowspan="1"><p><code>tasks.named<JavaExec>("run")</code> 블록 확인</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>배너가 깨짐</p>
+</td><td colspan="1" rowspan="1"><p>IntelliJ 터미널의 인코딩을 UTF-8로 설정</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>distZip</code> 후 실행 권한 없음</p>
+</td><td colspan="1" rowspan="1"><p><code>chmod +x bin/study-buddy-agent-codelab</code> 실행</p>
+</td></tr>
+</table>
+<p>배너가 출력되고 <code>/help</code> 명령이 동작하면 이 단계 완료입니다.</p>
+
+
+      </google-codelab-step>
+    
       <google-codelab-step label="마무리" duration="0">
         <p>축하합니다! Koog 프레임워크로 완전한 AI 학습 도우미 에이전트를 완성했습니다.</p>
 <h2 is-upgraded>구현한 내용 정리</h2>
@@ -734,6 +977,10 @@ suspend fun runStudyTeam(apiKey: String) {
 <tr><td colspan="1" rowspan="1"><p>Multi-Agent</p>
 </td><td colspan="1" rowspan="1"><p>Multi-Agent Orchestration</p>
 </td><td colspan="1" rowspan="1"><p>학습 전문가 팀</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>CLI 디자인 + 배포</p>
+</td><td colspan="1" rowspan="1"><p>Banner, Command, EventHandler, distZip</p>
+</td><td colspan="1" rowspan="1"><p>배포 가능한 CLI 앱</p>
 </td></tr>
 </table>
 <h2 is-upgraded>배운 핵심 개념</h2>
