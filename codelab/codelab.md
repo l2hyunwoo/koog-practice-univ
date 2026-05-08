@@ -699,6 +699,263 @@ Positive
 
 3개 에이전트가 순차 실행되어 `notes/`와 `exam-prep/` 폴더에 결과물이 생성되면 이 단계 완료입니다.
 
+## CLI 앱 디자인 + 배포
+Duration: 10:00
+
+### 핵심 컴포넌트
+
+| 클래스/패턴 | 역할 |
+|---|---|
+| `Banner` | CLI 실행 시 출력되는 환영/종료 화면. ASCII 아트로 앱의 첫인상을 만든다 |
+| `Command` 인터페이스 | 슬래시 명령어(`/help`, `/exit` 등)를 구조적으로 처리하는 패턴 |
+| `CommandRegistry` | 명령어를 등록하고 입력에 맞는 명령어를 찾아 실행하는 저장소 |
+| `handleEvents` | 에이전트의 도구 호출 상태를 실시간으로 보여주는 이벤트 핸들러 |
+
+### 예제 시나리오
+
+지금까지 만든 에이전트를 실제 CLI 앱처럼 만들어봅니다. 터미널에서 `./gradlew run`으로 실행하면 배너가 출력되고, 슬래시 명령어를 지원하며, 도구 호출 과정이 실시간으로 표시됩니다.
+
+### Banner.kt 구현
+
+`ui/Banner.kt` 파일을 생성합니다.
+
+```kotlin
+package com.example.studybuddy.ui
+
+object Banner {
+    private const val VERSION = "1.0.0"
+
+    fun printWelcome() {
+        println("""
+            |
+            |  ███████╗████████╗██╗   ██╗██████╗ ██╗   ██╗
+            |  ██╔════╝╚══██╔══╝██║   ██║██╔══██╗╚██╗ ██╔╝
+            |  ███████╗   ██║   ██║   ██║██║  ██║ ╚████╔╝
+            |  ╚════██║   ██║   ██║   ██║██║  ██║  ╚██╔╝
+            |  ███████║   ██║   ╚██████╔╝██████╔╝   ██║
+            |  ╚══════╝   ╚═╝    ╚═════╝ ╚═════╝    ╚═╝
+            |
+            |  ██████╗ ██╗   ██╗██████╗ ██████╗ ██╗   ██╗
+            |  ██╔══██╗██║   ██║██╔══██╗██╔══██╗╚██╗ ██╔╝
+            |  ██████╔╝██║   ██║██║  ██║██║  ██║ ╚████╔╝
+            |  ██╔══██╗██║   ██║██║  ██║██║  ██║  ╚██╔╝
+            |  ██████╔╝╚██████╔╝██████╔╝██████╔╝   ██║
+            |  ╚═════╝  ╚═════╝ ╚═════╝ ╚═════╝    ╚═╝
+            |
+            |  AI 학습 도우미 v${'$'}VERSION
+            |  강의 복습 · 과제 분석 · 시험 대비
+            |
+            |  ─────────────────────────────────────────
+            |  /help   사용 가능한 명령어 보기
+            |  /clear  대화 초기화
+            |  /exit   종료
+            |  ─────────────────────────────────────────
+            |
+            |  또는 바로 질문을 입력하세요!
+            |
+        """.trimMargin())
+    }
+
+    fun printGoodbye() {
+        println("""
+            |
+            |  ─────────────────────────────────────────
+            |  공부 화이팅! 다음에 또 만나요!
+            |  ─────────────────────────────────────────
+            |
+        """.trimMargin())
+    }
+}
+```
+
+### Command 패턴 구현
+
+`command/Command.kt` — 명령어 인터페이스와 레지스트리를 정의합니다.
+
+```kotlin
+package com.example.studybuddy.command
+
+interface Command {
+    val name: String
+    val aliases: List<String> get() = emptyList()
+    val description: String
+    val usage: String get() = "/$name"
+    suspend fun execute(args: List<String> = emptyList()): CommandResult
+    fun matches(input: String): Boolean {
+        val commandName = input.removePrefix("/").split(" ").firstOrNull() ?: return false
+        return commandName == name || commandName in aliases
+    }
+}
+
+sealed class CommandResult {
+    data class Success(val message: String = "") : CommandResult()
+    data class Error(val message: String) : CommandResult()
+    data object Exit : CommandResult()
+    data object ClearSession : CommandResult()
+}
+
+class CommandRegistry {
+    private val commands = mutableListOf<Command>()
+
+    fun register(command: Command) { commands.add(command) }
+    fun registerAll(vararg cmds: Command) { commands.addAll(cmds) }
+    fun getAllCommands(): List<Command> = commands.toList()
+
+    suspend fun execute(input: String): CommandResult? {
+        val command = commands.find { it.matches(input) } ?: return null
+        val args = input.removePrefix("/").split(" ").drop(1).filter { it.isNotBlank() }
+        return command.execute(args)
+    }
+}
+```
+
+`command/HelpCommand.kt`, `command/ExitCommand.kt`, `command/ClearCommand.kt`도 각각 생성합니다.
+
+```kotlin
+// HelpCommand.kt
+class HelpCommand(private val registry: CommandRegistry) : Command {
+    override val name = "help"
+    override val aliases = listOf("h", "?")
+    override val description = "사용 가능한 명령어를 보여줍니다"
+    override suspend fun execute(args: List<String>): CommandResult {
+        println("\n📋 사용 가능한 명령어:\n")
+        registry.getAllCommands().sortedBy { it.name }.forEach { cmd ->
+            val aliasText = if (cmd.aliases.isNotEmpty()) {
+                " (${cmd.aliases.joinToString(", ") { "/$it" }})"
+            } else ""
+            println("  ${cmd.usage}$aliasText")
+            println("    ${cmd.description}")
+        }
+        println()
+        return CommandResult.Success()
+    }
+}
+
+// ExitCommand.kt
+class ExitCommand : Command {
+    override val name = "exit"
+    override val aliases = listOf("quit", "q")
+    override val description = "프로그램을 종료합니다"
+    override suspend fun execute(args: List<String>) = CommandResult.Exit
+}
+
+// ClearCommand.kt
+class ClearCommand : Command {
+    override val name = "clear"
+    override val aliases = listOf("reset")
+    override val description = "대화를 초기화하고 새로 시작합니다"
+    override suspend fun execute(args: List<String>): CommandResult {
+        println("🔄 세션이 초기화되었습니다. 새로 시작합니다!")
+        return CommandResult.ClearSession
+    }
+}
+```
+
+### EventHandler로 도구 호출 시각화
+
+에이전트 생성 시 `handleEvents`를 설치하면 도구 호출 과정이 실시간으로 표시됩니다.
+
+```kotlin
+import ai.koog.agents.features.eventHandler.feature.handleEvents
+
+val agent = AIAgent(
+    promptExecutor = simpleGoogleAIExecutor(apiKey),
+    systemPrompt = studyBuddyPrompt,
+    llmModel = GoogleModels.Gemini2_5Flash,
+    toolRegistry = toolRegistry
+) {
+    install(ChatMemory) {
+        chatHistoryProvider = InMemoryChatHistoryProvider()
+        windowSize(20)
+    }
+    handleEvents {
+        onToolCallStarting { println("  🔧 [도구 호출] ${it.toolName}...") }
+        onToolCallCompleted { println("  ✅ [도구 완료] ${it.toolName}") }
+    }
+}
+```
+
+### Main.kt에 Command 패턴 통합
+
+```kotlin
+// CLI 대화형 세션 (Banner + Command 패턴 적용)
+suspend fun runStudySession(apiKey: String) {
+    val commandRegistry = CommandRegistry()
+    commandRegistry.registerAll(
+        HelpCommand(commandRegistry),
+        ExitCommand(),
+        ClearCommand()
+    )
+
+    Banner.printWelcome()
+    var agent = createAgent(apiKey)
+
+    while (true) {
+        print("학생 > ")
+        val input = readLine()?.trim() ?: break
+        if (input.isBlank()) continue
+
+        if (input.startsWith("/")) {
+            when (val result = commandRegistry.execute(input)) {
+                is CommandResult.Exit -> { Banner.printGoodbye(); return }
+                is CommandResult.ClearSession -> { agent = createAgent(apiKey); continue }
+                is CommandResult.Success -> continue
+                is CommandResult.Error -> { println("  ❌ ${result.message}"); continue }
+                null -> { println("  알 수 없는 명령어입니다. /help를 입력해보세요."); continue }
+            }
+        }
+
+        val response = agent.run(input)
+        println("\n조교 > $response\n")
+    }
+}
+```
+
+### CLI 앱으로 배포하기
+
+Gradle `application` 플러그인이 이미 설정되어 있으므로, 배포 가능한 CLI 앱을 바로 만들 수 있습니다.
+
+`build.gradle.kts`에 다음을 추가합니다.
+
+```kotlin
+application {
+    mainClass.set("com.example.studybuddy.MainKt")
+    applicationDefaultJvmArgs = listOf("--enable-native-access=ALL-UNNAMED")
+}
+
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
+}
+```
+
+배포용 패키지 생성:
+
+```bash
+# ZIP 배포 패키지 생성
+./gradlew distZip
+
+# 또는 로컬 설치
+./gradlew installDist
+
+# 실행
+./build/install/study-buddy-agent-codelab/bin/study-buddy-agent-codelab
+```
+
+`distZip`으로 생성된 `build/distributions/study-buddy-agent-codelab-1.0.0.zip`을 배포하면, 상대방은 압축을 풀고 `bin/study-buddy-agent-codelab` 스크립트로 바로 실행할 수 있습니다.
+
+Positive
+: Gradle `application` 플러그인은 **시작 스크립트를 자동 생성**합니다. `bin/` 폴더에 OS별 실행 파일(Linux/Mac용 sh, Windows용 bat)이 들어있어서 Java를 직접 호출할 필요가 없습니다. `GOOGLE_API_KEY` 환경변수만 설정하면 바로 실행됩니다.
+
+### 트러블슈팅
+
+| 오류 | 해결법 |
+|------|--------|
+| `standardInput`이 동작하지 않음 | `tasks.named<JavaExec>("run")` 블록 확인 |
+| 배너가 깨짐 | IntelliJ 터미널의 인코딩을 UTF-8로 설정 |
+| `distZip` 후 실행 권한 없음 | `chmod +x bin/study-buddy-agent-codelab` 실행 |
+
+배너가 출력되고 `/help` 명령이 동작하면 이 단계 완료입니다.
+
 ## 마무리
 Duration: 0:00
 
@@ -715,6 +972,7 @@ Duration: 0:00
 | ChatMemory | ChatMemory Feature | 대화 맥락을 기억하는 에이전트 |
 | 시험 대비 | Tool 확장, 지식 종합 | 시험 대비 자료 자동 생성기 |
 | Multi-Agent | Multi-Agent Orchestration | 학습 전문가 팀 |
+| CLI 디자인 + 배포 | Banner, Command, EventHandler, distZip | 배포 가능한 CLI 앱 |
 
 ### 배운 핵심 개념
 
