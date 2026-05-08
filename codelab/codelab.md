@@ -38,7 +38,7 @@ Duration: 2:00
 
 시작 전에 다음 항목을 준비하세요.
 
-- **IntelliJ IDEA** Community Edition(무료) 또는 Ultimate, 또는 Android Studio
+- **IntelliJ IDEA 2026.1.1** Community Edition(무료) 또는 Ultimate 권장, 또는 Android Studio
 - **JDK 21 이상**
 - **Google AI Studio API 키** ([aistudio.google.com](https://aistudio.google.com) 에서 무료 발급)
 - **Kotlin 기초 문법** 이해 (기본 문법을 알고 있으면 충분)
