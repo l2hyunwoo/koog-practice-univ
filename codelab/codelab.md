@@ -94,7 +94,7 @@ Positive
 ```
 2026-bwai-campus-korea-ai-agent-with-kotlin/
 ├── build.gradle.kts                    # Gradle 빌드 설정
-├── src/main/kotlin/com/example/studybuddy/
+├── src/main/kotlin/dev/community/gdg/campus/korea/koog/
 │   ├── Main.kt                         # 진입점
 │   └── tools/
 │       ├── ReadFileTool.kt             # 파일 읽기 도구
@@ -207,7 +207,7 @@ Duration: 10:00
 `tools/ReadFileTool.kt` 파일을 열어봅니다.
 
 ```kotlin
-package com.example.studybuddy.tools
+package dev.community.gdg.campus.korea.koog.tools
 
 import ai.koog.agents.core.tools.annotations.Tool
 import ai.koog.agents.core.tools.annotations.LLMDescription
@@ -232,7 +232,7 @@ fun readFile(
 `tools/SaveNoteTool.kt` 파일을 열어봅니다.
 
 ```kotlin
-package com.example.studybuddy.tools
+package dev.community.gdg.campus.korea.koog.tools
 
 import ai.koog.agents.core.tools.annotations.Tool
 import ai.koog.agents.core.tools.annotations.LLMDescription
@@ -260,8 +260,8 @@ fun saveNote(
 `Main.kt`에서 ToolRegistry를 만들고 에이전트에 연결합니다.
 
 ```kotlin
-import com.example.studybuddy.tools.readFile
-import com.example.studybuddy.tools.saveNote
+import dev.community.gdg.campus.korea.koog.tools.readFile
+import dev.community.gdg.campus.korea.koog.tools.saveNote
 import ai.koog.agents.core.tools.ToolRegistry
 
 val toolRegistry = ToolRegistry {
@@ -314,7 +314,7 @@ Duration: 10:00
 `tools/ListFilesTool.kt` 파일을 열어봅니다.
 
 ```kotlin
-package com.example.studybuddy.tools
+package dev.community.gdg.campus.korea.koog.tools
 
 import ai.koog.agents.core.tools.annotations.Tool
 import ai.koog.agents.core.tools.annotations.LLMDescription
@@ -343,7 +343,7 @@ fun listFiles(
 `Main.kt`에서 ToolRegistry에 `listFiles`를 추가합니다.
 
 ```kotlin
-import com.example.studybuddy.tools.listFiles
+import dev.community.gdg.campus.korea.koog.tools.listFiles
 
 val toolRegistry = ToolRegistry {
     tool(::readFile)
@@ -514,7 +514,7 @@ Duration: 10:00
 `tools/GenerateExamPrepTool.kt` 파일을 열어봅니다.
 
 ```kotlin
-package com.example.studybuddy.tools
+package dev.community.gdg.campus.korea.koog.tools
 
 import ai.koog.agents.core.tools.annotations.Tool
 import ai.koog.agents.core.tools.annotations.LLMDescription
@@ -548,7 +548,7 @@ fun generateExamPrep(
 `Main.kt`에서 ToolRegistry에 `generateExamPrep`을 추가합니다.
 
 ```kotlin
-import com.example.studybuddy.tools.generateExamPrep
+import dev.community.gdg.campus.korea.koog.tools.generateExamPrep
 
 val toolRegistry = ToolRegistry {
     tool(::readFile)
@@ -609,7 +609,7 @@ import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
 import ai.koog.prompt.executor.clients.google.GoogleModels
-import com.example.studybuddy.tools.*
+import dev.community.gdg.campus.korea.koog.tools.*
 
 // 순차 오케스트레이션 — 각 전문가 에이전트를 역할별 System Prompt로 생성
 suspend fun runStudyTeam(apiKey: String) {
@@ -720,7 +720,7 @@ Duration: 10:00
 `ui/Banner.kt` 파일을 생성합니다.
 
 ```kotlin
-package com.example.studybuddy.ui
+package dev.community.gdg.campus.korea.koog.ui
 
 object Banner {
     private const val VERSION = "1.0.0"
@@ -773,7 +773,7 @@ object Banner {
 `command/Command.kt` — 명령어 인터페이스와 레지스트리를 정의합니다.
 
 ```kotlin
-package com.example.studybuddy.command
+package dev.community.gdg.campus.korea.koog.command
 
 interface Command {
     val name: String
@@ -919,7 +919,7 @@ Gradle `application` 플러그인이 이미 설정되어 있으므로, 배포 �
 
 ```kotlin
 application {
-    mainClass.set("com.example.studybuddy.MainKt")
+    mainClass.set("dev.community.gdg.campus.korea.koog.MainKt")
     applicationDefaultJvmArgs = listOf("--enable-native-access=ALL-UNNAMED")
 }
 
