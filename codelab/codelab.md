@@ -406,6 +406,20 @@ println(response)
 
 `ToolRegistry`에 `tool(::readFile)` 형태로 등록하면, 에이전트가 필요할 때 이 함수를 호출할 수 있게 됩니다. Kotlin의 함수 레퍼런스(`::`)를 사용합니다.
 
+> 💡 **함수 레퍼런스(`::`)란?** Kotlin에서 `::readFile`은 `readFile` 함수 자체를 값처럼 전달하는 문법입니다. 함수를 "호출"하는 게 아니라, 함수 자체를 다른 함수에 "넘겨주는" 것입니다.
+>
+> ```kotlin
+> // 함수 호출 — readFile을 직접 실행하고 결과를 받는다
+> val result = readFile("some-file.md")
+>
+> // 함수 레퍼런스 — readFile 함수 자체를 변수에 담는다
+> val fn = ::readFile   // fn의 타입: (String) -> String
+> val result = fn("some-file.md")  // 나중에 호출할 수 있다
+>
+> // ToolRegistry에서는 이렇게 함수 자체를 넘겨준다
+> tool(::readFile)  // "이 함수를 에이전트가 쓸 수 있게 등록해줘"
+> ```
+
 ### 실행 확인
 
 실행하면 에이전트가 다음 순서로 동작합니다:
