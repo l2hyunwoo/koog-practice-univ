@@ -1,32 +1,4 @@
-# Build output
-build/
-out/
-
-# Gradle
-.gradle/
-gradle-app.setting
-!gradle-wrapper.jar
-!gradle-wrapper.properties
-
-# IDE
-.idea/
-*.iml
-*.ipr
-*.iws
-
-# Local properties
-local.properties
-
-# Project-specific ignores
-notes/
-exam-prep/
-
-# OMC state
 .omc/
-
-# Claude
 .claude/
-
-# OS files
 .DS_Store
 Thumbs.db
