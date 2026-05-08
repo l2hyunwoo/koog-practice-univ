@@ -74,8 +74,7 @@ java -version
 # openjdk version "21.x.x" 이상이면 OK
 ```
 
-Negative
-: JDK 버전이 21 미만이면 [Adoptium](https://adoptium.net/)에서 JDK 21을 다운로드하세요. Koog 프레임워크는 JDK 21의 기능을 사용합니다.
+> ⚠️ JDK 버전이 21 미만이면 [Adoptium](https://adoptium.net/)에서 JDK 21을 다운로드하세요. Koog 프레임워크는 JDK 21의 기능을 사용합니다.
 
 ### 2. Google Gemini API Key 발급
 
@@ -83,8 +82,7 @@ Negative
 2. "Get API Key" 클릭 → "Create API key" 클릭
 3. 발급된 키를 복사해두기
 
-Positive
-: Gemini API는 무료 티어가 있어서 이 코드랩을 완료하는 데 비용이 들지 않습니다.
+> 💡 Gemini API는 무료 티어가 있어서 이 코드랩을 완료하는 데 비용이 들지 않습니다.
 
 ### 3. 환경변수 설정
 
@@ -100,8 +98,7 @@ Windows (PowerShell):
 $env:GOOGLE_API_KEY="여기에_발급받은_키_붙여넣기"
 ```
 
-Positive
-: IntelliJ에서 실행할 때는 Run > Edit Configurations > Environment variables에서 설정해도 됩니다. 터미널에서 설정한 환경변수는 IntelliJ에서 인식하지 못할 수 있으므로, IntelliJ 내에서 직접 설정하는 것을 권장합니다.
+> 💡 IntelliJ에서 실행할 때는 Run > Edit Configurations > Environment variables에서 설정해도 됩니다. 터미널에서 설정한 환경변수는 IntelliJ에서 인식하지 못할 수 있으므로, IntelliJ 내에서 직접 설정하는 것을 권장합니다.
 
 ### 4. 프로젝트 클론
 
@@ -175,8 +172,7 @@ git checkout initial
 
 `./gradlew build` 명령이 성공하면 이 단계 완료입니다.
 
-Positive
-: 막히면 `git checkout page3`으로 다음 단계의 완성 코드를 확인할 수 있습니다.
+> 💡 막히면 `git checkout page3`으로 다음 단계의 완성 코드를 확인할 수 있습니다.
 
 ## 첫 에이전트 + 역할 부여
 Duration: 7:00
@@ -253,8 +249,7 @@ fun main() = runBlocking {
 
 IntelliJ에서 `Main.kt`의 ▶ 버튼을 클릭하거나, 터미널에서 `./gradlew run`을 실행합니다.
 
-Positive
-: `systemPrompt`를 "교수님처럼 설명해줘"로 바꾸면 어떻게 달라지는지 직접 바꿔보세요. 같은 질문이라도 System Prompt에 따라 "교수님 스타일" vs "친구 스타일" 답변이 나옵니다. 에이전트를 만드는 핵심은 **역할 정의**입니다. 역할이 명확할수록 답변 품질이 올라갑니다.
+> 💡 `systemPrompt`를 "교수님처럼 설명해줘"로 바꾸면 어떻게 달라지는지 직접 바꿔보세요. 같은 질문이라도 System Prompt에 따라 "교수님 스타일" vs "친구 스타일" 답변이 나옵니다. 에이전트를 만드는 핵심은 **역할 정의**입니다. 역할이 명확할수록 답변 품질이 올라갑니다.
 
 ### 트러블슈팅
 
@@ -266,8 +261,7 @@ Positive
 
 에이전트가 AVL Tree와 BST의 차이를 한국어로 설명하면 이 단계 완료입니다.
 
-Positive
-: 막히면 `git checkout page3`으로 완성 코드를 확인하세요.
+> 💡 막히면 `git checkout page3`으로 완성 코드를 확인하세요.
 
 ## 강의자료 읽기 + 복습 노트 생성
 Duration: 10:00
@@ -425,8 +419,7 @@ println(response)
 
 이 순서를 개발자가 직접 프로그래밍하지 않았습니다. **에이전트가 스스로 판단**한 것입니다. 이것이 바로 **ReAct 패턴** (Reasoning + Acting)입니다.
 
-Positive
-: `@LLMDescription`이 에이전트가 Tool을 이해하는 핵심입니다. 설명이 모호하면 도구를 엉뚱하게 쓰거나 아예 안 씁니다. "파일을 읽습니다"보다 "강의 노트, 과제, 소스 코드 등 파일을 읽어서 내용을 반환합니다"가 훨씬 효과적입니다.
+> 💡 `@LLMDescription`이 에이전트가 Tool을 이해하는 핵심입니다. 설명이 모호하면 도구를 엉뚱하게 쓰거나 아예 안 씁니다. "파일을 읽습니다"보다 "강의 노트, 과제, 소스 코드 등 파일을 읽어서 내용을 반환합니다"가 훨씬 효과적입니다.
 
 ### 트러블슈팅
 
@@ -438,8 +431,7 @@ Positive
 
 `notes/` 폴더에 복습 노트 파일이 자동으로 생성되면 이 단계 완료입니다.
 
-Positive
-: 막히면 `git checkout page4`로 완성 코드를 확인하세요.
+> 💡 막히면 `git checkout page4`로 완성 코드를 확인하세요.
 
 ## 과제 분석 + 노트 활용
 Duration: 10:00
@@ -534,8 +526,7 @@ val response = agent.run("""
 - **`getBalance()`**: `right - left`로 계산 (정확한 것은 `left - right`)
 - **`rightRotate()`**: 회전 후 높이 업데이트 누락
 
-Positive
-: 에이전트가 `listFiles` → `readFile`(여러 번) → `saveNote` 순서를 **스스로 결정**합니다. 순서를 직접 프로그래밍하지 않았습니다. 이전 단계에서 쌓아둔 BST 복습 노트를 참고해서 AVL 과제를 분석합니다. **지식이 축적될수록 에이전트가 더 잘합니다**.
+> 💡 에이전트가 `listFiles` → `readFile`(여러 번) → `saveNote` 순서를 **스스로 결정**합니다. 순서를 직접 프로그래밍하지 않았습니다. 이전 단계에서 쌓아둔 BST 복습 노트를 참고해서 AVL 과제를 분석합니다. **지식이 축적될수록 에이전트가 더 잘합니다**.
 
 ### 트러블슈팅
 
@@ -547,8 +538,7 @@ Positive
 
 에이전트가 과제 요구사항, 기존 노트, 학생 코드를 모두 읽고 풀이 가이드를 생성하면 이 단계 완료입니다.
 
-Positive
-: 막히면 `git checkout page5`로 완성 코드를 확인하세요.
+> 💡 막히면 `git checkout page5`로 완성 코드를 확인하세요.
 
 ## ChatMemory로 대화형 과제 도움
 Duration: 8:00
@@ -662,11 +652,9 @@ suspend fun runStudySession(apiKey: String) {
 
 마지막 질문에서 "내 코드"와 "회전"을 이전 맥락으로 이해하는지 확인해보세요.
 
-Positive
-: `install(ChatMemory)` 한 줄이 "맥락 없는 봇"과 "대화가 되는 에이전트"의 차이입니다. `windowSize(20)`는 토큰 제한 내에서 최근 대화만 유지하는 현실적인 전략입니다. 실제 서비스에서도 이렇게 합니다.
+> 💡 `install(ChatMemory)` 한 줄이 "맥락 없는 봇"과 "대화가 되는 에이전트"의 차이입니다. `windowSize(20)`는 토큰 제한 내에서 최근 대화만 유지하는 현실적인 전략입니다. 실제 서비스에서도 이렇게 합니다.
 
-Negative
-: `install(...)` 블록이 `AIAgent(...)` 람다 **안에** 있어야 합니다. 밖에 있으면 동작하지 않습니다. Koog의 Feature 시스템은 에이전트 생성 시점에 설치되어야 합니다.
+> ⚠️ `install(...)` 블록이 `AIAgent(...)` 람다 **안에** 있어야 합니다. 밖에 있으면 동작하지 않습니다. Koog의 Feature 시스템은 에이전트 생성 시점에 설치되어야 합니다.
 
 ### 트러블슈팅
 
@@ -678,8 +666,7 @@ Negative
 
 "아까 설명한 LL 회전"처럼 이전 맥락 참조가 동작하면 이 단계 완료입니다.
 
-Positive
-: 막히면 `git checkout page6`으로 완성 코드를 확인하세요.
+> 💡 막히면 `git checkout page6`으로 완성 코드를 확인하세요.
 
 ## 시험 대비 자료 자동 생성
 Duration: 10:00
@@ -778,8 +765,7 @@ val response = agent.run("""
 ⑥ generateExamPrep("concept-map", "...") → 개념맵 생성
 ```
 
-Positive
-: **"매주 5분 투자한 복습 노트가 시험 자료로 변환되는 순간"** — 이것이 이 코드랩의 하이라이트입니다. `notes/`에 노트가 많을수록 생성되는 자료의 품질이 높아집니다. 지식 복리 효과입니다.
+> 💡 **"매주 5분 투자한 복습 노트가 시험 자료로 변환되는 순간"** — 이것이 이 코드랩의 하이라이트입니다. `notes/`에 노트가 많을수록 생성되는 자료의 품질이 높아집니다. 지식 복리 효과입니다.
 
 ### 트러블슈팅
 
@@ -791,8 +777,7 @@ Positive
 
 `exam-prep/` 폴더에 `cheatsheet.md`, `practice-exam.md`, `concept-map.md` 3개 파일이 자동으로 생성되면 이 단계 완료입니다.
 
-Positive
-: 막히면 `git checkout page7`로 완성 코드를 확인하세요.
+> 💡 막히면 `git checkout page7`로 완성 코드를 확인하세요.
 
 ## Multi-Agent — 학습 전문가 팀
 Duration: 8:00
@@ -933,8 +918,7 @@ suspend fun runStudyTeam(apiKey: String) {
 - **과제 도우미**: `listFiles`도 가지고 있습니다. `notes/`에 뭐가 있는지 먼저 확인해야 하니까요.
 - **시험 대비가**: `saveNote` 대신 `generateExamPrep`을 가지고 있습니다. 결과물을 `exam-prep/`에 저장해야 하니까요.
 
-Positive
-: 결과가 **파이프라인처럼 흐릅니다**: 복습 노트(파일) → 과제 가이드(파일) → 시험 자료(파일). 파일 시스템이 에이전트 간 공유 메모리 역할을 합니다. 이런 패턴을 **파일 기반 오케스트레이션**이라고 합니다.
+> 💡 결과가 **파이프라인처럼 흐릅니다**: 복습 노트(파일) → 과제 가이드(파일) → 시험 자료(파일). 파일 시스템이 에이전트 간 공유 메모리 역할을 합니다. 이런 패턴을 **파일 기반 오케스트레이션**이라고 합니다.
 
 ### 트러블슈팅
 
@@ -946,8 +930,7 @@ Positive
 
 3개 에이전트가 순차 실행되어 `notes/`와 `exam-prep/` 폴더에 결과물이 생성되면 이 단계 완료입니다.
 
-Positive
-: 막히면 `git checkout page8`로 완성 코드를 확인하세요.
+> 💡 막히면 `git checkout page8`로 완성 코드를 확인하세요.
 
 ## CLI 앱 디자인 + 배포
 Duration: 10:00
@@ -1214,8 +1197,7 @@ tasks.named<JavaExec>("run") {
 
 `distZip`으로 생성된 `build/distributions/study-buddy-agent-codelab-1.0.0.zip`을 배포하면, 상대방은 압축을 풀고 `bin/study-buddy-agent-codelab` 스크립트로 바로 실행할 수 있습니다.
 
-Positive
-: Gradle `application` 플러그인은 **시작 스크립트를 자동 생성**합니다. `bin/` 폴더에 OS별 실행 파일(Linux/Mac용 sh, Windows용 bat)이 들어있어서 Java를 직접 호출할 필요가 없습니다. `GOOGLE_API_KEY` 환경변수만 설정하면 바로 실행됩니다.
+> 💡 Gradle `application` 플러그인은 **시작 스크립트를 자동 생성**합니다. `bin/` 폴더에 OS별 실행 파일(Linux/Mac용 sh, Windows용 bat)이 들어있어서 Java를 직접 호출할 필요가 없습니다. `GOOGLE_API_KEY` 환경변수만 설정하면 바로 실행됩니다.
 
 ### 트러블슈팅
 
@@ -1227,8 +1209,7 @@ Positive
 
 배너가 출력되고 `/help` 명령이 동작하면 이 단계 완료입니다.
 
-Positive
-: 막히면 `git checkout page9` 또는 `git checkout complete`로 최종 완성 코드를 확인하세요.
+> 💡 막히면 `git checkout page9` 또는 `git checkout complete`로 최종 완성 코드를 확인하세요.
 
 ## 마무리
 Duration: 0:00

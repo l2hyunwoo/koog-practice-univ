@@ -78,14 +78,14 @@
 <pre><code language="language-bash" class="language-bash">java -version
 # openjdk version &#34;21.x.x&#34; 이상이면 OK
 </code></pre>
-<p>Negative : JDK 버전이 21 미만이면 <a href="https://adoptium.net/" target="_blank">Adoptium</a>에서 JDK 21을 다운로드하세요. Koog 프레임워크는 JDK 21의 기능을 사용합니다.</p>
+<p>⚠️ JDK 버전이 21 미만이면 <a href="https://adoptium.net/" target="_blank">Adoptium</a>에서 JDK 21을 다운로드하세요. Koog 프레임워크는 JDK 21의 기능을 사용합니다.</p>
 <h2 is-upgraded>2. Google Gemini API Key 발급</h2>
 <ol type="1">
 <li><a href="https://aistudio.google.com" target="_blank">Google AI Studio</a>에 접속</li>
 <li>&#34;Get API Key&#34; 클릭 → &#34;Create API key&#34; 클릭</li>
 <li>발급된 키를 복사해두기</li>
 </ol>
-<p>Positive : Gemini API는 무료 티어가 있어서 이 코드랩을 완료하는 데 비용이 들지 않습니다.</p>
+<p>💡 Gemini API는 무료 티어가 있어서 이 코드랩을 완료하는 데 비용이 들지 않습니다.</p>
 <h2 is-upgraded>3. 환경변수 설정</h2>
 <p>Mac/Linux:</p>
 <pre><code language="language-bash" class="language-bash">export GOOGLE_API_KEY=여기에_발급받은_키_붙여넣기
@@ -93,7 +93,7 @@
 <p>Windows (PowerShell):</p>
 <pre><code language="language-powershell" class="language-powershell">$env:GOOGLE_API_KEY=&#34;여기에_발급받은_키_붙여넣기&#34;
 </code></pre>
-<p>Positive : IntelliJ에서 실행할 때는 Run &gt; Edit Configurations &gt; Environment variables에서 설정해도 됩니다. 터미널에서 설정한 환경변수는 IntelliJ에서 인식하지 못할 수 있으므로, IntelliJ 내에서 직접 설정하는 것을 권장합니다.</p>
+<p>💡 IntelliJ에서 실행할 때는 Run &gt; Edit Configurations &gt; Environment variables에서 설정해도 됩니다. 터미널에서 설정한 환경변수는 IntelliJ에서 인식하지 못할 수 있으므로, IntelliJ 내에서 직접 설정하는 것을 권장합니다.</p>
 <h2 is-upgraded>4. 프로젝트 클론</h2>
 <pre><code language="language-bash" class="language-bash">git clone https://github.com/l2hyunwoo/2026-Build-With-AI-GDG-On-Campus-Koog.git
 cd 2026-Build-With-AI-GDG-On-Campus-Koog
@@ -178,7 +178,7 @@ git checkout initial
 </td></tr>
 </table>
 <p><code>./gradlew build</code> 명령이 성공하면 이 단계 완료입니다.</p>
-<p>Positive : 막히면 <code>git checkout page3</code>으로 다음 단계의 완성 코드를 확인할 수 있습니다.</p>
+<p>💡 막히면 <code>git checkout page3</code>으로 다음 단계의 완성 코드를 확인할 수 있습니다.</p>
 
 
       </google-codelab-step>
@@ -255,7 +255,7 @@ import kotlinx.coroutines.runBlocking
 </ul>
 <h2 is-upgraded>실행 확인</h2>
 <p>IntelliJ에서 <code>Main.kt</code>의 ▶ 버튼을 클릭하거나, 터미널에서 <code>./gradlew run</code>을 실행합니다.</p>
-<p>Positive : <code>systemPrompt</code>를 &#34;교수님처럼 설명해줘&#34;로 바꾸면 어떻게 달라지는지 직접 바꿔보세요. 같은 질문이라도 System Prompt에 따라 &#34;교수님 스타일&#34; vs &#34;친구 스타일&#34; 답변이 나옵니다. 에이전트를 만드는 핵심은 <strong>역할 정의</strong>입니다. 역할이 명확할수록 답변 품질이 올라갑니다.</p>
+<p>💡 <code>systemPrompt</code>를 &#34;교수님처럼 설명해줘&#34;로 바꾸면 어떻게 달라지는지 직접 바꿔보세요. 같은 질문이라도 System Prompt에 따라 &#34;교수님 스타일&#34; vs &#34;친구 스타일&#34; 답변이 나옵니다. 에이전트를 만드는 핵심은 <strong>역할 정의</strong>입니다. 역할이 명확할수록 답변 품질이 올라갑니다.</p>
 <h2 is-upgraded>트러블슈팅</h2>
 <table>
 <tr><td colspan="1" rowspan="1"><p>오류</p>
@@ -272,7 +272,7 @@ import kotlinx.coroutines.runBlocking
 </td></tr>
 </table>
 <p>에이전트가 AVL Tree와 BST의 차이를 한국어로 설명하면 이 단계 완료입니다.</p>
-<p>Positive : 막히면 <code>git checkout page3</code>으로 완성 코드를 확인하세요.</p>
+<p>💡 막히면 <code>git checkout page3</code>으로 완성 코드를 확인하세요.</p>
 
 
       </google-codelab-step>
@@ -409,7 +409,7 @@ println(response)
 4. 사용자에게 완료 보고
 </code></pre>
 <p>이 순서를 개발자가 직접 프로그래밍하지 않았습니다. <strong>에이전트가 스스로 판단</strong>한 것입니다. 이것이 바로 <strong>ReAct 패턴</strong> (Reasoning + Acting)입니다.</p>
-<p>Positive : <code>@LLMDescription</code>이 에이전트가 Tool을 이해하는 핵심입니다. 설명이 모호하면 도구를 엉뚱하게 쓰거나 아예 안 씁니다. &#34;파일을 읽습니다&#34;보다 &#34;강의 노트, 과제, 소스 코드 등 파일을 읽어서 내용을 반환합니다&#34;가 훨씬 효과적입니다.</p>
+<p>💡 <code>@LLMDescription</code>이 에이전트가 Tool을 이해하는 핵심입니다. 설명이 모호하면 도구를 엉뚱하게 쓰거나 아예 안 씁니다. &#34;파일을 읽습니다&#34;보다 &#34;강의 노트, 과제, 소스 코드 등 파일을 읽어서 내용을 반환합니다&#34;가 훨씬 효과적입니다.</p>
 <h2 is-upgraded>트러블슈팅</h2>
 <table>
 <tr><td colspan="1" rowspan="1"><p>오류</p>
@@ -426,7 +426,7 @@ println(response)
 </td></tr>
 </table>
 <p><code>notes/</code> 폴더에 복습 노트 파일이 자동으로 생성되면 이 단계 완료입니다.</p>
-<p>Positive : 막히면 <code>git checkout page4</code>로 완성 코드를 확인하세요.</p>
+<p>💡 막히면 <code>git checkout page4</code>로 완성 코드를 확인하세요.</p>
 
 
       </google-codelab-step>
@@ -503,7 +503,7 @@ val toolRegistry = ToolRegistry {
 <li><strong><code>getBalance()</code></strong>: <code>right - left</code>로 계산 (정확한 것은 <code>left - right</code>)</li>
 <li><strong><code>rightRotate()</code></strong>: 회전 후 높이 업데이트 누락</li>
 </ul>
-<p>Positive : 에이전트가 <code>listFiles</code> → <code>readFile</code>(여러 번) → <code>saveNote</code> 순서를 <strong>스스로 결정</strong>합니다. 순서를 직접 프로그래밍하지 않았습니다. 이전 단계에서 쌓아둔 BST 복습 노트를 참고해서 AVL 과제를 분석합니다. <strong>지식이 축적될수록 에이전트가 더 잘합니다</strong>.</p>
+<p>💡 에이전트가 <code>listFiles</code> → <code>readFile</code>(여러 번) → <code>saveNote</code> 순서를 <strong>스스로 결정</strong>합니다. 순서를 직접 프로그래밍하지 않았습니다. 이전 단계에서 쌓아둔 BST 복습 노트를 참고해서 AVL 과제를 분석합니다. <strong>지식이 축적될수록 에이전트가 더 잘합니다</strong>.</p>
 <h2 is-upgraded>트러블슈팅</h2>
 <table>
 <tr><td colspan="1" rowspan="1"><p>오류</p>
@@ -520,7 +520,7 @@ val toolRegistry = ToolRegistry {
 </td></tr>
 </table>
 <p>에이전트가 과제 요구사항, 기존 노트, 학생 코드를 모두 읽고 풀이 가이드를 생성하면 이 단계 완료입니다.</p>
-<p>Positive : 막히면 <code>git checkout page5</code>로 완성 코드를 확인하세요.</p>
+<p>💡 막히면 <code>git checkout page5</code>로 완성 코드를 확인하세요.</p>
 
 
       </google-codelab-step>
@@ -620,8 +620,8 @@ suspend fun runStudySession(apiKey: String) {
 학생 &gt; 내 코드에서 회전 부분 다시 봐줘
 </code></pre>
 <p>마지막 질문에서 &#34;내 코드&#34;와 &#34;회전&#34;을 이전 맥락으로 이해하는지 확인해보세요.</p>
-<p>Positive : <code>install(ChatMemory)</code> 한 줄이 &#34;맥락 없는 봇&#34;과 &#34;대화가 되는 에이전트&#34;의 차이입니다. <code>windowSize(20)</code>는 토큰 제한 내에서 최근 대화만 유지하는 현실적인 전략입니다. 실제 서비스에서도 이렇게 합니다.</p>
-<p>Negative : <code>install(...)</code> 블록이 <code>AIAgent(...)</code> 람다 <strong>안에</strong> 있어야 합니다. 밖에 있으면 동작하지 않습니다. Koog의 Feature 시스템은 에이전트 생성 시점에 설치되어야 합니다.</p>
+<p>💡 <code>install(ChatMemory)</code> 한 줄이 &#34;맥락 없는 봇&#34;과 &#34;대화가 되는 에이전트&#34;의 차이입니다. <code>windowSize(20)</code>는 토큰 제한 내에서 최근 대화만 유지하는 현실적인 전략입니다. 실제 서비스에서도 이렇게 합니다.</p>
+<p>⚠️ <code>install(...)</code> 블록이 <code>AIAgent(...)</code> 람다 <strong>안에</strong> 있어야 합니다. 밖에 있으면 동작하지 않습니다. Koog의 Feature 시스템은 에이전트 생성 시점에 설치되어야 합니다.</p>
 <h2 is-upgraded>트러블슈팅</h2>
 <table>
 <tr><td colspan="1" rowspan="1"><p>오류</p>
@@ -638,7 +638,7 @@ suspend fun runStudySession(apiKey: String) {
 </td></tr>
 </table>
 <p>&#34;아까 설명한 LL 회전&#34;처럼 이전 맥락 참조가 동작하면 이 단계 완료입니다.</p>
-<p>Positive : 막히면 <code>git checkout page6</code>으로 완성 코드를 확인하세요.</p>
+<p>💡 막히면 <code>git checkout page6</code>으로 완성 코드를 확인하세요.</p>
 
 
       </google-codelab-step>
@@ -717,7 +717,7 @@ val toolRegistry = ToolRegistry {
 ⑤ generateExamPrep(&#34;practice-exam&#34;, &#34;...&#34;) → 예상문제 생성
 ⑥ generateExamPrep(&#34;concept-map&#34;, &#34;...&#34;) → 개념맵 생성
 </code></pre>
-<p>Positive : <strong>&#34;매주 5분 투자한 복습 노트가 시험 자료로 변환되는 순간&#34;</strong> — 이것이 이 코드랩의 하이라이트입니다. <code>notes/</code>에 노트가 많을수록 생성되는 자료의 품질이 높아집니다. 지식 복리 효과입니다.</p>
+<p>💡 <strong>&#34;매주 5분 투자한 복습 노트가 시험 자료로 변환되는 순간&#34;</strong> — 이것이 이 코드랩의 하이라이트입니다. <code>notes/</code>에 노트가 많을수록 생성되는 자료의 품질이 높아집니다. 지식 복리 효과입니다.</p>
 <h2 is-upgraded>트러블슈팅</h2>
 <table>
 <tr><td colspan="1" rowspan="1"><p>오류</p>
@@ -734,7 +734,7 @@ val toolRegistry = ToolRegistry {
 </td></tr>
 </table>
 <p><code>exam-prep/</code> 폴더에 <code>cheatsheet.md</code>, <code>practice-exam.md</code>, <code>concept-map.md</code> 3개 파일이 자동으로 생성되면 이 단계 완료입니다.</p>
-<p>Positive : 막히면 <code>git checkout page7</code>로 완성 코드를 확인하세요.</p>
+<p>💡 막히면 <code>git checkout page7</code>로 완성 코드를 확인하세요.</p>
 
 
       </google-codelab-step>
@@ -875,7 +875,7 @@ suspend fun runStudyTeam(apiKey: String) {
 <li><strong>과제 도우미</strong>: <code>listFiles</code>도 가지고 있습니다. <code>notes/</code>에 뭐가 있는지 먼저 확인해야 하니까요.</li>
 <li><strong>시험 대비가</strong>: <code>saveNote</code> 대신 <code>generateExamPrep</code>을 가지고 있습니다. 결과물을 <code>exam-prep/</code>에 저장해야 하니까요.</li>
 </ul>
-<p>Positive : 결과가 <strong>파이프라인처럼 흐릅니다</strong>: 복습 노트(파일) → 과제 가이드(파일) → 시험 자료(파일). 파일 시스템이 에이전트 간 공유 메모리 역할을 합니다. 이런 패턴을 <strong>파일 기반 오케스트레이션</strong>이라고 합니다.</p>
+<p>💡 결과가 <strong>파이프라인처럼 흐릅니다</strong>: 복습 노트(파일) → 과제 가이드(파일) → 시험 자료(파일). 파일 시스템이 에이전트 간 공유 메모리 역할을 합니다. 이런 패턴을 <strong>파일 기반 오케스트레이션</strong>이라고 합니다.</p>
 <h2 is-upgraded>트러블슈팅</h2>
 <table>
 <tr><td colspan="1" rowspan="1"><p>오류</p>
@@ -892,7 +892,7 @@ suspend fun runStudyTeam(apiKey: String) {
 </td></tr>
 </table>
 <p>3개 에이전트가 순차 실행되어 <code>notes/</code>와 <code>exam-prep/</code> 폴더에 결과물이 생성되면 이 단계 완료입니다.</p>
-<p>Positive : 막히면 <code>git checkout page8</code>로 완성 코드를 확인하세요.</p>
+<p>💡 막히면 <code>git checkout page8</code>로 완성 코드를 확인하세요.</p>
 
 
       </google-codelab-step>
@@ -1140,7 +1140,7 @@ tasks.named&lt;JavaExec&gt;(&#34;run&#34;) {
 ./build/install/study-buddy-agent-codelab/bin/study-buddy-agent-codelab
 </code></pre>
 <p><code>distZip</code>으로 생성된 <code>build/distributions/study-buddy-agent-codelab-1.0.0.zip</code>을 배포하면, 상대방은 압축을 풀고 <code>bin/study-buddy-agent-codelab</code> 스크립트로 바로 실행할 수 있습니다.</p>
-<p>Positive : Gradle <code>application</code> 플러그인은 <strong>시작 스크립트를 자동 생성</strong>합니다. <code>bin/</code> 폴더에 OS별 실행 파일(Linux/Mac용 sh, Windows용 bat)이 들어있어서 Java를 직접 호출할 필요가 없습니다. <code>GOOGLE_API_KEY</code> 환경변수만 설정하면 바로 실행됩니다.</p>
+<p>💡 Gradle <code>application</code> 플러그인은 <strong>시작 스크립트를 자동 생성</strong>합니다. <code>bin/</code> 폴더에 OS별 실행 파일(Linux/Mac용 sh, Windows용 bat)이 들어있어서 Java를 직접 호출할 필요가 없습니다. <code>GOOGLE_API_KEY</code> 환경변수만 설정하면 바로 실행됩니다.</p>
 <h2 is-upgraded>트러블슈팅</h2>
 <table>
 <tr><td colspan="1" rowspan="1"><p>오류</p>
@@ -1157,7 +1157,7 @@ tasks.named&lt;JavaExec&gt;(&#34;run&#34;) {
 </td></tr>
 </table>
 <p>배너가 출력되고 <code>/help</code> 명령이 동작하면 이 단계 완료입니다.</p>
-<p>Positive : 막히면 <code>git checkout page9</code> 또는 <code>git checkout complete</code>로 최종 완성 코드를 확인하세요.</p>
+<p>💡 막히면 <code>git checkout page9</code> 또는 <code>git checkout complete</code>로 최종 완성 코드를 확인하세요.</p>
 
 
       </google-codelab-step>
